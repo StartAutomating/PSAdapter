@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PowerShellMetadata xmlns="http://schemas.microsoft.com/cmdlets-over-objects/2009/11">
+    <Class ClassName="System.Guid" CmdletAdapter="PSAdapter.PSDotNetAdapter">
+        <Version>1.0</Version>
+        <DefaultNoun>Guid</DefaultNoun>
+        <InstanceCmdlets>
+            <GetCmdletParameters />
+        </InstanceCmdlets>
+        <StaticCmdlets>
+            <Cmdlet>
+                <CmdletMetadata Verb="New" />
+                <Method MethodName="NewGuid">                
+                    <ReturnValue>
+                        <Type PSType="System.Guid" />
+                    </ReturnValue>
+                </Method>
+            </Cmdlet>
+            <Cmdlet>
+                <CmdletMetadata Verb="ConvertTo" />
+                <Method MethodName="Parse">
+                    <Parameters>
+                        <Parameter ParameterName="String">
+                            <Type PSType="System.String" />
+                            <CmdletParameterMetadata ValueFromPipeline="true" ValueFromPipelineByPropertyName="true" Position="0">
+                                <AllowNull />
+                            </CmdletParameterMetadata>
+                        </Parameter>
+                    </Parameters>
+                    <ReturnValue>
+                        <Type PSType="System.Guid" />
+                    </ReturnValue>
+                </Method>
+            </Cmdlet>
+        </StaticCmdlets>
+    </Class>    
+</PowerShellMetadata>
