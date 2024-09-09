@@ -531,9 +531,9 @@ elseif ($_ -is [System.IO.FileInfo]) {
 
             if (String.IsNullOrEmpty(instanceScript)) {
                 instanceScript = @"
-$pattern = '" + RegEx.Escape(this.ClassName) + @"'
+$pattern = '" + Regex.Escape(this.ClassName) + @"'
 foreach ($var in Get-Variable -ValueOnly) {
-    if ($var.pstypenames -match ) {
+    if ($var.pstypenames -match $pattern) {
         $var
     }
 }
