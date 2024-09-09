@@ -1,6 +1,11 @@
 <!-- Generated with EZOut 2.0.6: Install-Module EZOut or https://github.com/StartAutomating/EZOut -->
 <Types>
   <Type>
+    <Name>PSAdapter</Name>
+    <Members>
+    </Members>
+  </Type>
+  <Type>
     <Name>PSAdapter.Template</Name>
     <Members>
       <NoteProperty>
