@@ -21,6 +21,14 @@
                     </ReturnValue>
                 </Method>  
             </Cmdlet>
+            <Cmdlet>
+                <CmdletMetadata Verb="Wait" Noun="HttpListener"/>
+                <Method MethodName="GetContext">
+                    <ReturnValue>
+                        <Type PSType='Net.HttpListenerContext' />
+                    </ReturnValue>
+                </Method>  
+            </Cmdlet>            
         </InstanceCmdlets>
         <StaticCmdlets>
             <Cmdlet>
@@ -32,5 +40,8 @@
                 </Method>
               </Cmdlet>
         </StaticCmdlets>
+        <CmdletAdapterPrivateData>
+            
+        </CmdletAdapterPrivateData>
     </Class>    
 </PowerShellMetadata>
