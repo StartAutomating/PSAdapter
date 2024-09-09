@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PowerShellMetadata xmlns="http://schemas.microsoft.com/cmdlets-over-objects/2009/11">
+    <Class ClassName="System.Environment" CmdletAdapter="PSAdapter.PSDotNetAdapter">
+        <Version>1.0</Version>
+        <DefaultNoun>Environment</DefaultNoun>        
+        <StaticCmdlets>
+            <Cmdlet>
+                <CmdletMetadata Verb="Get" Noun="LogicalDrive"/>
+                <Method MethodName="GetLogicalDrives">
+                    <ReturnValue>
+                        <Type PSType="System.String[]"  />
+                    </ReturnValue>
+                </Method>
+            </Cmdlet>
+            <Cmdlet>
+                <CmdletMetadata Verb="Get" Noun="CommandLineArgument"/>
+                <Method MethodName="GetCommandLineArguments">                    
+                    <ReturnValue>
+                        <Type PSType="System.String[]"  />
+                    </ReturnValue>
+                </Method>
+            </Cmdlet>
+            <Cmdlet>
+                <CmdletMetadata Verb="Get" Noun="StackTrace"/>
+                <Method MethodName="get_StackTrace">
+                    <ReturnValue>
+                        <Type PSType="System.String"  />
+                    </ReturnValue>
+                </Method>
+            </Cmdlet>
+            <Cmdlet>
+                <CmdletMetadata Verb="Expand" Noun="EnvironmentVariable"/>
+                <Method MethodName="ExpandEnvironmentVariables">
+                    <Parameters>
+                        <Parameter ParameterName="Name">
+                            <Type PSType="System.String" />
+                                <CmdletParameterMetadata Aliases="n" ValueFromPipeline="true" ValueFromPipelineByPropertyName="true" Position="0">
+                                    <AllowNull />
+                                </CmdletParameterMetadata>
+                        </Parameter>
+                    </Parameters>
+                    <ReturnValue>
+                        <Type PSType="System.String" />
+                    </ReturnValue>
+                </Method>
+            </Cmdlet>
+            <Cmdlet>
+                <CmdletMetadata Verb="Set" Noun="EnvironmentVariable"/>
+                <Method MethodName="SetEnvironmentVariable">
+                    <Parameters>
+                        <Parameter ParameterName="Variable">
+                            <Type PSType="System.String" />
+                                <CmdletParameterMetadata Aliases="Name Key" ValueFromPipelineByPropertyName="true" Position="0">
+                                    <AllowNull />
+                                </CmdletParameterMetadata>
+                        </Parameter>
+                        <Parameter ParameterName="Value">
+                            <Type PSType="System.String" />
+                                <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" Position="1">
+                                    <AllowNull />
+                                </CmdletParameterMetadata>
+                        </Parameter>
+                    </Parameters>
+                    <ReturnValue>
+                        <Type PSType="System.Void" />
+                    </ReturnValue>
+                </Method>
+            </Cmdlet>
+        </StaticCmdlets>        
+    </Class> 
+</PowerShellMetadata>
