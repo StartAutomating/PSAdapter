@@ -29,6 +29,46 @@
                 </Method>
             </Cmdlet>
             <Cmdlet>
+                <CmdletMetadata Verb="Get" Noun="OperatingSystem"/>
+                <Method MethodName="get_OSVersion">
+                    <ReturnValue>
+                        <Type PSType="System.OperatingSystem"  />
+                    </ReturnValue>
+                </Method>
+            </Cmdlet>
+            <Cmdlet>
+                <CmdletMetadata Verb="Get" Noun="MachineName"/>
+                <Method MethodName="get_MachineName">
+                    <ReturnValue>
+                        <Type PSType="System.String"  />
+                    </ReturnValue>
+                </Method>
+            </Cmdlet>
+            <Cmdlet>
+                <CmdletMetadata Verb="Get" Noun="ExitCode"/>
+                <Method MethodName="get_ExitCode">
+                    <ReturnValue>
+                        <Type PSType="int"  />
+                    </ReturnValue>
+                </Method>
+            </Cmdlet>
+            <Cmdlet>
+                <CmdletMetadata Verb="Set" Noun="ExitCode"/>
+                <Method MethodName="set_ExitCode">
+                    <Parameters>
+                        <Parameter ParameterName="ExitCode">
+                            <Type PSType="int" />
+                                <CmdletParameterMetadata Aliases="n" ValueFromPipeline="true" ValueFromPipelineByPropertyName="true" Position="0">
+                                    <AllowNull />
+                                </CmdletParameterMetadata>
+                        </Parameter>
+                    </Parameters>
+                    <ReturnValue>
+                        <Type PSType="int"  />
+                    </ReturnValue>
+                </Method>
+            </Cmdlet>
+            <Cmdlet>
                 <CmdletMetadata Verb="Expand" Noun="EnvironmentVariable"/>
                 <Method MethodName="ExpandEnvironmentVariables">
                     <Parameters>
