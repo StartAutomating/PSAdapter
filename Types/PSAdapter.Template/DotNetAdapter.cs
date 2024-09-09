@@ -506,6 +506,7 @@ namespace PSAdapter
             if (String.IsNullOrEmpty(instanceScript)) {
                 instanceScript = @"
 param($pattern)
+Write-Verbose 'Matching pattern: ' + ""$pattern""
 foreach ($var in Get-Variable -ValueOnly) {
     if ($var.pstypenames -match $pattern) {
         $var
