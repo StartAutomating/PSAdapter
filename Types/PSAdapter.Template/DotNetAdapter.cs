@@ -507,7 +507,7 @@ namespace PSAdapter
                 instanceScript = @"
 $pattern = '" + Regex.Escape(this.ClassName) + @"'
 foreach ($var in Get-Variable -ValueOnly) {
-    if ($var.pstypenames -match ) {
+    if ($var.pstypenames -match $pattern) {
         $var
     }
 }
