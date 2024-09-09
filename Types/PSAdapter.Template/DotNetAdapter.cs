@@ -3,6 +3,7 @@ namespace PSAdapter
     using System;
     using System.Collections.Generic;
     using System.Text;
+    using System.Text.RegularExpressions;
     using System.Threading.Tasks;
     using System.Management.Automation;
     using Microsoft.PowerShell.Cmdletization;
@@ -504,9 +505,9 @@ namespace PSAdapter
 
             if (String.IsNullOrEmpty(instanceScript)) {
                 instanceScript = @"
-$pattern = '" + Regex.Escape(this.ClassName) + @"'
+$pattern = '" + RegEx.Escape(this.ClassName) + @"'
 foreach ($var in Get-Variable -ValueOnly) {
-    if ($var.pstypenames -match $pattern) {
+    if ($var.pstypenames -match ) {
         $var
     }
 }
