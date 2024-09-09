@@ -515,7 +515,7 @@ foreach ($var in Get-Variable -ValueOnly) {
             }
             this.Cmdlet.WriteVerbose(instanceScript);
             Pipeline pipeline = Runspace.DefaultRunspace.CreateNestedPipeline(instanceScript, false);
-            pipeline.Commands[0].Parameter.Add("pattern", Regex.Escape(this.ClassName));
+            pipeline.Commands[0].Parameters.Add("pattern", Regex.Escape(this.ClassName));
             Collection<PSObject> results = pipeline.Invoke();
             pipeline.Dispose();
             return results;
