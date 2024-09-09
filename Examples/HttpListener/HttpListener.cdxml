@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PowerShellMetadata xmlns="http://schemas.microsoft.com/cmdlets-over-objects/2009/11">
+    <Class ClassName="System.Net.HttpListener" CmdletAdapter="PSAdapter.PSDotNetAdapter">
+        <Version>1.0</Version>
+        <DefaultNoun>HttpListener</DefaultNoun>
+        <InstanceCmdlets>
+            <GetCmdletParameters />                
+            <Cmdlet>
+                <CmdletMetadata Verb="Start" Noun="HttpListener"/>
+                <Method MethodName="Start">
+                    <ReturnValue>
+                        <Type PSType='System.Void' />
+                    </ReturnValue>
+                </Method>  
+            </Cmdlet>
+            <Cmdlet>
+                <CmdletMetadata Verb="Stop" Noun="HttpListener"/>
+                <Method MethodName="Abort">
+                    <ReturnValue>
+                        <Type PSType='System.Void' />
+                    </ReturnValue>
+                </Method>  
+            </Cmdlet>
+        </InstanceCmdlets>
+        <StaticCmdlets>
+            <Cmdlet>
+                <CmdletMetadata Verb="New" />
+                <Method MethodName=":Constructor">                
+                    <ReturnValue>
+                        <Type PSType="System.Net.HttpListener" />
+                    </ReturnValue>
+                </Method>
+              </Cmdlet>
+        </StaticCmdlets>
+    </Class>    
+</PowerShellMetadata>
