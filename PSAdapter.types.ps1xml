@@ -1,0 +1,30 @@
+<!-- Generated with EZOut 2.0.6: Install-Module EZOut or https://github.com/StartAutomating/EZOut -->
+<Types>
+  <Type>
+    <Name>PSAdapter.Template</Name>
+    <Members>
+      <NoteProperty>
+        <Name>NullAdapter.cs</Name>
+        <Value>/*
+.SYNOPSIS
+    This is a template for a CmdletAdapter that does nothing.
+.DESCRIPTION
+    This is a template for a CmdletAdapter that literally does nothing.
+
+    This can be useful as a starting point for creating a new CmdletAdapter.
+*/
+namespace PSAdapter
+{    
+    using System;
+    using Microsoft.PowerShell.Cmdletization;
+
+    public class NullAdapter : CmdletAdapter&lt;Object&gt;
+    {                
+    
+    }
+}
+</Value>
+      </NoteProperty>
+    </Members>
+  </Type>
+</Types>
