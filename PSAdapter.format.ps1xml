@@ -6,13 +6,16 @@
       <ViewSelectedBy>
         <TypeName>PSAdapter</TypeName>
       </ViewSelectedBy>
+      <GroupBy>
+        <PropertyName>PSAdapterType</PropertyName>
+      </GroupBy>
       <CustomControl>
         <CustomEntries>
           <CustomEntry>
             <CustomItem>
               <ExpressionBinding>
                 <ScriptBlock>
-        if ($_.BaseType.Name -match 'CmdletAdapter') {
+        if ($_.BaseType.Name -match 'CmdletAdapter' -or $_ -is [IO.FileInfo]) {
             $_.Fullname
         } else {
             $_.Name
