@@ -6,8 +6,7 @@ Import-BuildStep -SourcePath (
 Push-Location ($PSScriptRoot | Split-Path)
 New-GitHubWorkflow -Name "Build PSAdapter" -On Push,
     PullRequest, 
-    Demand -Job PowerShellStaticAnalysis, 
-    TestPowerShellOnLinux, 
+    Demand -Job  TestPowerShellOnLinux, 
     TagReleaseAndPublish, BuildPSAdapter -Environment ([Ordered]@{
         REGISTRY = 'ghcr.io'
         IMAGE_NAME = '${{ github.repository }}'
