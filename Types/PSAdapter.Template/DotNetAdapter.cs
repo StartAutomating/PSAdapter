@@ -504,10 +504,9 @@ namespace PSAdapter
 
             if (String.IsNullOrEmpty(instanceScript)) {
                 instanceScript = @"
-$thisClassType = $this.ClassName -as [type]
-foreach ($var in Get-Variable) {
-    if ($thisClassType -and $var.Value -is $thisClassType) {
-        $var.Value
+foreach ($var in Get-Variable -ValueOnly) {
+    if ($var -is [" + this.ClassName + @"]) {
+        $var
     }
 }
 ";                                            
