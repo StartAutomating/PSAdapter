@@ -3,6 +3,20 @@
   <Type>
     <Name>PSAdapter</Name>
     <Members>
+      <ScriptProperty>
+        <Name>PSAdapterType</Name>
+        <GetScriptBlock>
+                        if ($_ -is [Management.Automation.PSModuleInfo]) {
+    'Module'
+} 
+elseif ($_ -is [type]) {
+    'Type'
+}
+elseif ($_ -is [System.IO.FileInfo]) {
+    'File'
+}
+                    </GetScriptBlock>
+      </ScriptProperty>
     </Members>
   </Type>
   <Type>
