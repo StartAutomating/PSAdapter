@@ -48,4 +48,16 @@ $myScriptTypeCommands = foreach ($myScriptType in $myModule.Name) {
 
 . ([ScriptBlock]::Create($myScriptTypeCommands -join [Environment]::NewLine))
 
+#region Custom
+$adapterTemplateType = (Get-TypeData -TypeName 'PSAdapter.Template')
+
+foreach ($CSharpTypeName in $adapterTemplateType.Members.Keys -match '\.cs') {
+    $compileError = $null
+    Add-Type -PassThru -TypeDefinition $adapterTemplateType.Members[$CSharpTypeName].Value -ErrorAction SilentlyContinue -ErrorVariable compileError
+    if ($compileError) {
+        Write-Warning "$compileError"
+    }
+}
+#endregion Custom
+
 Export-ModuleMember -Alias * -Function * -Variable $myModule.Name
