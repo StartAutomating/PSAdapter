@@ -1,9 +1,9 @@
-if ($_ -is [Management.Automation.PSModuleInfo]) {
+if ($this -is [Management.Automation.PSModuleInfo]) {
     'Module'
 } 
-elseif ($_ -is [type]) {
+elseif ($this -is [type]) {
     'Type'
 }
-elseif ($_ -is [System.IO.FileInfo]) {
+elseif ($this -is [System.IO.FileInfo]) {
     'File'
 }
