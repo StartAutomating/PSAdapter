@@ -85,6 +85,20 @@
                 </Method>
             </Cmdlet>
             <Cmdlet>
+                <CmdletMetadata Verb="Get" Noun="SpecialFolder"/>
+                <Method MethodName="GetFolderPath">
+                    <Parameters>
+                        <Parameter ParameterName="DirectoryName">
+                            <Type PSType="Environment+SpecialFolder" />
+                            <CmdletParameterMetadata ValueFromPipeline="true" ValueFromPipelineByPropertyName="true" Position="0" Aliases="SpecialFolderName SpecialFolder" />
+                        </Parameter>
+                    </Parameters>
+                    <ReturnValue>
+                        <Type PSType="System.String" />
+                    </ReturnValue>
+                </Method>
+            </Cmdlet>
+            <Cmdlet>
                 <CmdletMetadata Verb="Set" Noun="EnvironmentVariable"/>
                 <Method MethodName="SetEnvironmentVariable">
                     <Parameters>
