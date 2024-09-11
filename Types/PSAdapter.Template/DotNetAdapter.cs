@@ -384,7 +384,7 @@ namespace PSAdapter
                 if (realMethod is MethodInfo) {                    
                     result = (realMethod as MethodInfo).Invoke(objectInstance, realMethodParameters);                    
                 } else if (realMethod is ConstructorInfo) {
-                    result = (realMethod as ConstructorInfo).Invoke(objectInstance, realMethodParameters);                   ;
+                    result = (realMethod as ConstructorInfo).Invoke(objectInstance, realMethodParameters);
                 }
                 if (passThru)
                 {
@@ -397,7 +397,20 @@ namespace PSAdapter
                 {
                     if (result != null)
                     {
-                        this.Cmdlet.WriteObject(result, true);
+                        if (result is Task) {
+                            Pipeline awaitResultPipeline = Runspace.DefaultRunspace.CreateNestedPipeline(@"
+                            param($task)
+                            while (-not $task.IsCompleted) {}
+                            $task.Result
+                        ", true);
+                            awaitResultPipeline.Commands[0].Parameters.Add("task", result);
+                            foreach (PSObject awaitResult in awaitResultPipeline.Invoke()) {
+                                this.Cmdlet.WriteObject(awaitResult, true);
+                            }
+                        } else {
+                            this.Cmdlet.WriteObject(result, true);
+                        }
+                        
                     }
                 }
             }
