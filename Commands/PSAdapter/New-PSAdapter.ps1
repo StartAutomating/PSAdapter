@@ -28,7 +28,12 @@ function New-PSAdapter {
     [Parameter(ValueFromPipelineByPropertyName)]
     [Alias('TemplateParameters')]
     [Collections.IDictionary]
-    $TemplateParameter = @{}
+    $TemplateParameter = @{},
+
+    # The output path for the adapter.
+    [Parameter(ValueFromPipelineByPropertyName)]
+    [string]
+    $OutputPath
     )
 
     process {
@@ -86,6 +91,25 @@ function New-PSAdapter {
         
         
         $templateString = $templateOutput -join [Environment]::NewLine
-        $templateString
+
+        $templateResult = 
+            if ($templateString -as [xml]) {
+                $templateXml -as [xml]
+            } else {
+                $templateString
+            }
+        
+        if ($OutputPath) {
+            if ($templateResult -is [xml]) {
+                $templateResult.Save($OutputPath)
+            } else {
+                $templateResult | Out-File -FilePath $OutputPath
+            }
+            if ($?) {
+                Get-Item -Path $outputPath
+            }
+        } else {
+            $templateResult
+        }
     }
 }
