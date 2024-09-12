@@ -1,0 +1,7 @@
+
+name: UsePSAdapter
+description: Adapt anything into Cmdlets
+actions: PSAdapter
+branding: 
+  icon: chevron-right
+  color: blue
