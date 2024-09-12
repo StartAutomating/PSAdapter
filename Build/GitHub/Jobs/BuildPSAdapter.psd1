@@ -20,7 +20,19 @@
             name = 'Use PipeScript Action'
             uses = 'StartAutomating/PipeScript@main'
             id = 'PipeScript'
-        }        
+        },
+        @{
+            name = 'Run PSAdapter (from main)'
+            if   = '${{github.ref_name == ''main''}}'
+            uses = 'StartAutomating/PSAdapter@main'
+            id = 'PSAdapterMain'
+        },
+        @{
+            name = 'Run PSAdapter (on branch)'
+            if   = '${{github.ref_name != ''main''}}'
+            uses = './'
+            id = 'PSAdapterBranch'
+        },        
         'RunEZOut',
         'RunHelpOut',
         @{
