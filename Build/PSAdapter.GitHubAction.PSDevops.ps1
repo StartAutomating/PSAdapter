@@ -5,6 +5,6 @@ Import-BuildStep -SourcePath (
 
 $PSScriptRoot | Split-Path | Push-Location
 
-New-GitHubAction -Name "UsePSAdapter" -Description 'Adapt anything into Cmdlets' -Action PSAdapter -Icon chevron-right -OutputPath .\action.yml
+New-GitHubAction -Name "UsePSAdapter" -Description 'Adapt anything into Cmdlets' -Action PSAdapterAction -Icon chevron-right -OutputPath .\action.yml
 
 Pop-Location
