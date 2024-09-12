@@ -153,15 +153,6 @@ runs:
         }
         function InitializeAction {
             #region Custom 
-            if ($PSVersionTable.Platform -eq 'Unix') {
-                $ffMpegInPath =  $ExecutionContext.SessionState.InvokeCommand.GetCommand('ffmpeg', 'Application')
-                if (-not $ffMpegInPath -and $env:GITHUB_WORKFLOW) {
-                    "::group::Installing FFMpeg" | Out-Host
-                    sudo apt update | Out-Host
-                    sudo apt install ffmpeg @FFMpegInstallArgument | Out-Host
-                    "::endgroup::" | Out-Host
-                }
-            }
             #endregion Custom
         
             # Configure git based on the $env:GITHUB_ACTOR
