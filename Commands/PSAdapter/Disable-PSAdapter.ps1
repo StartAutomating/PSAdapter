@@ -10,7 +10,7 @@ function Disable-PSAdapter {
         This enables you to enable and disable a large number of commands as needed, without loading all of them into memory when a module first loads.
     #>
     param(
-    # The name of the adapter to enable.
+    # The name of the adapter to disable.
     [Parameter(ValueFromPipelineByPropertyName)]
     [Alias('ModuleName','Name')]
     [string[]]
