@@ -108,17 +108,16 @@ namespace PSAdapter
  
         public bool MatchesFilters(object value, PSCmdlet cmdlet)
         {
-            cmdlet.WriteVerbose(String.Format("Confirming match: {0}.  {1} Filters to process", value, filters.Count));
+            cmdlet.WriteDebug(String.Format("Confirming match: {0}.  {1} Filters to process", value, filters.Count));
  
             int filterCount = 1;
             foreach (PSDotNetQueryFilter filter in filters)
             {
-
-                cmdlet.WriteVerbose(String.Format("Processing filter #{0}.  Type: {1}", filterCount, filter.FilterType));
+                cmdlet.WriteDebug(String.Format("Processing filter #{0}.  Type: {1}", filterCount, filter.FilterType));
                 filterCount++;
                 PropertyInfo pi = value.GetType().GetProperty(filter.PropertyName, 
                     BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.GetProperty | BindingFlags.GetField | BindingFlags.Instance);
-                cmdlet.WriteVerbose(String.Format("Property Found {0}", pi)); 
+                cmdlet.WriteDebug(String.Format("Property Found {0}", pi)); 
                 if (pi != null)
                 {                        
                     bool excluded = false;
@@ -128,7 +127,7 @@ namespace PSAdapter
                     switch (filter.FilterType)
                     {
                         case PSDotNetQueryFilter.QueryFilterType.Exclude:
-                            cmdlet.WriteVerbose(String.Format("Processing Exclude Filter: Value ( {0} ) : Wildcards Enabled ( {1} ) : Possible Values ( {2} )", propValue, filter.wildcardsEnabled, filter.Values));
+                            cmdlet.WriteDebug(String.Format("Processing Exclude Filter: Value ( {0} ) : Wildcards Enabled ( {1} ) : Possible Values ( {2} )", propValue, filter.wildcardsEnabled, filter.Values));
                             if (filter.wildcardsEnabled)
                             {
                                 foreach (string exV in filter.Values)
@@ -158,7 +157,7 @@ namespace PSAdapter
                             }
                             break;
                         case PSDotNetQueryFilter.QueryFilterType.Include:
-                            cmdlet.WriteVerbose(String.Format("Processing Include Filter: Value ( {0} ) : Wildcards Enabled ( {1} ) : Possible Values ( {2} )", propValue, filter.wildcardsEnabled, filter.Values));
+                            cmdlet.WriteDebug(String.Format("Processing Include Filter: Value ( {0} ) : Wildcards Enabled ( {1} ) : Possible Values ( {2} )", propValue, filter.wildcardsEnabled, filter.Values));
                             excluded = true;
                             if (filter.wildcardsEnabled)
                             {
@@ -189,7 +188,7 @@ namespace PSAdapter
                             }
                             break;
                         case PSDotNetQueryFilter.QueryFilterType.Maximum:
-                            cmdlet.WriteVerbose(String.Format("Processing Maximum Filter: Value ( {0} ) : Max Values ( {1} )", propValue, filter.Values));
+                            cmdlet.WriteDebug(String.Format("Processing Maximum Filter: Value ( {0} ) : Max Values ( {1} )", propValue, filter.Values));
                             excluded = true;
                             foreach (object exV in filter.Values)
                             {
@@ -206,7 +205,7 @@ namespace PSAdapter
 
                             break;
                         case PSDotNetQueryFilter.QueryFilterType.Minimum:
-                            cmdlet.WriteVerbose(String.Format("Processing Minimum Filter: Value ( {0} ) : Max Values ( {1} )", propValue, filter.Values));
+                            cmdlet.WriteDebug(String.Format("Processing Minimum Filter: Value ( {0} ) : Max Values ( {1} )", propValue, filter.Values));
                             excluded = true;
                             foreach (object exV in filter.Values)
                             {
@@ -244,16 +243,16 @@ namespace PSAdapter
         }        
 
         public override void BeginProcessing() {
-            this.Cmdlet.WriteVerbose("Begin Processing");
+            this.Cmdlet.WriteDebug("Begin Processing");
             this.StopRequested = false;
         }
             
         public override void EndProcessing() {
-            this.Cmdlet.WriteVerbose("End Processing");
+            this.Cmdlet.WriteDebug("End Processing");
         }
 
         public override void StopProcessing() {
-            this.Cmdlet.WriteVerbose("Stop Processing");
+            this.Cmdlet.WriteDebug("Stop Processing");
             this.StopRequested = true;
             this.CancellationTokenSource.Cancel();
         }
@@ -300,8 +299,9 @@ namespace PSAdapter
         {            
             MemberInfo realMethod = null;
             RealParameters = new Object[0];
+            Regex isConstructor = new Regex(@"^:{1,2}(?>Constructor|New)$",RegexOptions.IgnoreCase);
             
-            if (String.Compare(methodName, ":Constructor", true) == 0) {
+            if (isConstructor.IsMatch(methodName)) {
                 foreach (ConstructorInfo method in t.GetConstructors()) {
                     Collection<Object> realParameters = new Collection<object>();                    
                     bool anyParameterNotFound = false;
@@ -337,7 +337,7 @@ namespace PSAdapter
                 }
                 if (realMethod != null)
                 {
-                    this.Cmdlet.WriteVerbose(String.Format("Method match found.  Method is {0}", realMethod.ToString()));
+                    this.Cmdlet.WriteDebug(String.Format("Method match found.  Method is {0}", realMethod.ToString()));
                     Collection<Object> realParameters = new Collection<object>();
  
                     ParameterInfo[] parameters =null;
@@ -352,16 +352,16 @@ namespace PSAdapter
                         {
                             foreach (MethodParameter mp in methodInfo.Parameters)
                             {
-                                this.Cmdlet.WriteVerbose(String.Format("Comparing Parameter {0} to method parameter {1}", pi.Name, mp.Name));
+                                this.Cmdlet.WriteDebug(String.Format("Comparing Parameter {0} to method parameter {1}", pi.Name, mp.Name));
                                 if (String.Compare(mp.Name, pi.Name, true) == 0)
                                 {
-                                    this.Cmdlet.WriteVerbose(String.Format("Adding Parameter {0} to method parameter {1}", pi.Name, mp.Name));
+                                    this.Cmdlet.WriteDebug(String.Format("Adding Parameter {0} to method parameter {1}", pi.Name, mp.Name));
                                     realParameters.Add(mp.Value);
                                     break;
                                 }
                                 if (mp.ParameterType != null && pi.ParameterType != null && mp.ParameterType.IsAssignableFrom(pi.ParameterType))
                                 {
-                                    this.Cmdlet.WriteVerbose(String.Format("Adding Parameter {0} to method parameter {1}", pi.Name, mp.Name));
+                                    this.Cmdlet.WriteDebug(String.Format("Adding Parameter {0} to method parameter {1}", pi.Name, mp.Name));
                                     realParameters.Add(mp.Value);
                                     break;
                                 }
@@ -383,15 +383,15 @@ namespace PSAdapter
  
         public override void ProcessRecord(QueryBuilder query)
         {
-            this.Cmdlet.WriteVerbose("Process Query");
+            this.Cmdlet.WriteDebug("Process Query");
             Collection<PSObject> results = GetInstances();
                          
             foreach (PSObject result in results)
             {
-                this.Cmdlet.WriteVerbose(String.Format("Processing Instance {0}", result.ImmediateBaseObject));
+                this.Cmdlet.WriteDebug(String.Format("Processing Instance {0}", result.ImmediateBaseObject));
                 if ((query as PSDotNetQueryBuilder).MatchesFilters(result.ImmediateBaseObject, this.Cmdlet))
                 {
-                    this.Cmdlet.WriteVerbose(String.Format("Match found! {0}", result.ImmediateBaseObject));
+                    this.Cmdlet.WriteDebug(String.Format("Match found! {0}", result.ImmediateBaseObject));
                     this.Cmdlet.WriteObject(result, true);
                 }
             }
@@ -399,10 +399,10 @@ namespace PSAdapter
  
         public override void ProcessRecord(object objectInstance, MethodInvocationInfo methodInvocationInfo, bool passThru)
         {
-            this.Cmdlet.WriteVerbose("Process instance method");
+            this.Cmdlet.WriteDebug("Process instance method");
             ScriptBlock methodScriptBlock = GetMethodScriptBlock(methodInvocationInfo);
             if (methodScriptBlock != null) {
-                this.Cmdlet.WriteVerbose($"Invoking method script: {methodScriptBlock}");                
+                this.Cmdlet.WriteDebug($"Invoking method script: {methodScriptBlock}");                
                 this.Cmdlet.SessionState.PSVariable.Set("this", this);
                 PowerShell psCmd = PowerShell.Create(RunspaceMode.CurrentRunspace).AddScript(methodScriptBlock.ToString());
                 foreach (string parameterName in this.GetScriptParameterName(methodScriptBlock)) {
@@ -423,11 +423,11 @@ namespace PSAdapter
             
             Type t = objectInstance.GetType();
             
-            this.Cmdlet.WriteVerbose(String.Format("Found Type {0} in Assembly {1}", this.ClassName, t.Assembly));
+            this.Cmdlet.WriteDebug(String.Format("Found Type {0} in Assembly {1}", this.ClassName, t.Assembly));
             Object[] realMethodParameters;
             MemberInfo realMethod = ResolveMethod(t, methodInvocationInfo.MethodName, methodInvocationInfo, out realMethodParameters);
             if (realMethod == null) {
-                this.Cmdlet.WriteVerbose(String.Format("Could not find {0} on type {1}", methodInvocationInfo.MethodName, this.ClassName));
+                this.Cmdlet.WriteDebug(String.Format("Could not find {0} on type {1}", methodInvocationInfo.MethodName, this.ClassName));
             }
 
             try
@@ -477,10 +477,10 @@ namespace PSAdapter
  
         public override void ProcessRecord(MethodInvocationInfo methodInvocationInfo)
         {
-            this.Cmdlet.WriteVerbose("Process Static Method");
+            this.Cmdlet.WriteDebug("Process Static Method");
             ScriptBlock methodScriptBlock = GetMethodScriptBlock(methodInvocationInfo);
             if (methodScriptBlock != null) {
-                this.Cmdlet.WriteVerbose("Invoking method script:" + methodScriptBlock.ToString());
+                this.Cmdlet.WriteDebug("Invoking method script:" + methodScriptBlock.ToString());
                 this.Cmdlet.SessionState.PSVariable.Set("this", this);
                 PowerShell psCmd = PowerShell.Create(RunspaceMode.CurrentRunspace).AddScript(methodScriptBlock.ToString());
                 psCmd.AddArgument(methodInvocationInfo);
@@ -502,13 +502,13 @@ namespace PSAdapter
                             return;
                         }                        
                     }
-                    this.Cmdlet.WriteVerbose(kv.Key + " : " + kv.Value);
+                    this.Cmdlet.WriteDebug(kv.Key + " : " + kv.Value);
                     
                 }
             }
 
             if (! String.IsNullOrEmpty(instanceScript)) {
-                this.Cmdlet.WriteVerbose("Running instance script" + instanceScript);
+                this.Cmdlet.WriteDebug("Running instance script" + instanceScript);
                 Pipeline pipeline = Runspace.DefaultRunspace.CreateNestedPipeline(instanceScript, false);
                 Collection<PSObject> results = pipeline.Invoke();
                 foreach (PSObject result in results) {
@@ -522,11 +522,11 @@ namespace PSAdapter
             Type t = null;
             if (LanguagePrimitives.TryConvertTo<Type>(this.ClassName, out t))
             {
-                this.Cmdlet.WriteVerbose(String.Format("Found Type {0} in Assembly {1}", this.ClassName, t.Assembly));
+                this.Cmdlet.WriteDebug(String.Format("Found Type {0} in Assembly {1}", this.ClassName, t.Assembly));
                 Object[] realMethodParameters;
                 MemberInfo realMethod = ResolveMethod(t, methodInvocationInfo.MethodName, methodInvocationInfo, out realMethodParameters);
                 if (realMethod == null) { return; }
-                this.Cmdlet.WriteVerbose(String.Format("Method Found {0}", realMethod));
+                this.Cmdlet.WriteDebug(String.Format("Method Found {0}", realMethod));
                 try
                 {
                     Object result = null;
@@ -550,13 +550,13 @@ namespace PSAdapter
                     }                    
                 }
             } else {
-                this.Cmdlet.WriteVerbose(String.Format("Could not find type {0}", this.ClassName));
+                this.Cmdlet.WriteDebug(String.Format("Could not find type {0}", this.ClassName));
             }
  
         }
 
         private Collection<PSObject> GetInstances() {
-            this.Cmdlet.WriteVerbose(this.Cmdlet.MyInvocation.InvocationName);
+            this.Cmdlet.WriteDebug(this.Cmdlet.MyInvocation.InvocationName);
             
             string instanceScript = String.Empty;
             foreach (var kv in this.PrivateData) {
@@ -572,7 +572,7 @@ namespace PSAdapter
                         }
                         instanceScript = kv.Value;
                     }
-                    this.Cmdlet.WriteVerbose(kv.Key + " : " + kv.Value);
+                    this.Cmdlet.WriteDebug(kv.Key + " : " + kv.Value);
                     
                 }
             }
@@ -588,7 +588,7 @@ foreach ($var in Get-Variable -ValueOnly) {
 }
 ";                                            
             }
-            this.Cmdlet.WriteVerbose(instanceScript);
+            this.Cmdlet.WriteDebug(instanceScript);
             Pipeline pipeline = Runspace.DefaultRunspace.CreateNestedPipeline(instanceScript, false);
             pipeline.Commands[0].Parameters.Add("pattern", Regex.Escape(this.ClassName));
             Collection<PSObject> results = pipeline.Invoke();
@@ -598,15 +598,15 @@ foreach ($var in Get-Variable -ValueOnly) {
  
         public override void ProcessRecord(QueryBuilder query, MethodInvocationInfo methodInvocationInfo, bool passThru)
         {   
-            this.Cmdlet.WriteVerbose("Process Query and Method");                    
+            this.Cmdlet.WriteDebug("Process Query and Method");
             Collection<PSObject> results = GetInstances();
  
             foreach (PSObject result in results)
             {
-                this.Cmdlet.WriteVerbose(String.Format("Processing Instance {0}", result.ImmediateBaseObject));
+                this.Cmdlet.WriteDebug(String.Format("Processing Instance {0}", result.ImmediateBaseObject));
                 if ((query as PSDotNetQueryBuilder).MatchesFilters(result.ImmediateBaseObject, this.Cmdlet))
                 {
-                    this.Cmdlet.WriteVerbose(String.Format("Match found! {0}", result.ImmediateBaseObject));
+                    this.Cmdlet.WriteDebug(String.Format("Match found! {0}", result.ImmediateBaseObject));
                     ProcessRecord(result.ImmediateBaseObject, methodInvocationInfo, passThru);
                 }
             }
