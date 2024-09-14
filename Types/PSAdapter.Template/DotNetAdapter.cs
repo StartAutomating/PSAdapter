@@ -4,6 +4,7 @@ namespace PSAdapter
     using System.Collections.Generic;
     using System.Text;
     using System.Text.RegularExpressions;
+    using System.Threading;
     using System.Threading.Tasks;
     using System.Management.Automation;
     using Microsoft.PowerShell.Cmdletization;
@@ -11,6 +12,7 @@ namespace PSAdapter
     using System.Collections.ObjectModel;
     using System.Reflection;
     using System.Collections.Specialized;
+    using System.Management.Automation.Language;
     using System.Management.Automation.Runspaces;
 
     public class PSDotNetQueryFilter
@@ -97,6 +99,12 @@ namespace PSAdapter
             );
             PSDotNetQueryFilter qf = new PSDotNetQueryFilter();
         }
+
+        public override void FilterByAssociatedInstance(object associatedInstance, string associationName, string sourceRole, string resultRole, BehaviorOnNoMatch behaviorOnNoMatch)
+        {
+            
+        }
+        
  
         public bool MatchesFilters(object value, PSCmdlet cmdlet)
         {
@@ -226,13 +234,18 @@ namespace PSAdapter
  
  
     public class PSDotNetAdapter : CmdletAdapter<Object>
-    {        
+    {
+        public DateTime InitializationTime = DateTime.Now;
+        public bool StopRequested = false;
+        public CancellationTokenSource CancellationTokenSource = new CancellationTokenSource();
+
         public override QueryBuilder GetQueryBuilder() {
             return new PSDotNetQueryBuilder(Type.GetType(this.ClassName));;
-        }
+        }        
 
         public override void BeginProcessing() {
             this.Cmdlet.WriteVerbose("Begin Processing");
+            this.StopRequested = false;
         }
             
         public override void EndProcessing() {
@@ -241,20 +254,46 @@ namespace PSAdapter
 
         public override void StopProcessing() {
             this.Cmdlet.WriteVerbose("Stop Processing");
-            
+            this.StopRequested = true;
+            this.CancellationTokenSource.Cancel();
+        }
+
+        PSDataCollection<PSObject> OutputCollection = new PSDataCollection<PSObject>();
+
+                
+        public PSDotNetAdapter() 
+        {
+            OutputCollection.DataAdded += (sender, e) => {
+                this.Cmdlet.WriteObject(OutputCollection[e.Index], true);
+            };
         }
 
         public ScriptBlock GetMethodScriptBlock(MethodInvocationInfo methodInvocationInfo) {
             try {
+                string methodName = methodInvocationInfo.MethodName;
                 if (methodInvocationInfo.MethodName.StartsWith('{') && methodInvocationInfo.MethodName.EndsWith('}')) {
-                    return ScriptBlock.Create(methodInvocationInfo.MethodName.Substring(1, methodInvocationInfo.MethodName.Length - 2));                    
+                    return ScriptBlock.Create(methodInvocationInfo.MethodName.Substring(1, methodInvocationInfo.MethodName.Length - 2));
                 }
                 return null;
             } catch (Exception ex) {
                 this.Cmdlet.WriteError(new ErrorRecord(ex, "PSDotNetAdapter.InvalidScriptBlock", ErrorCategory.InvalidOperation, methodInvocationInfo));
                 return null;
-            }
-            
+            }            
+        }
+
+        public string[] GetScriptParameterName(ScriptBlock scriptBlock) {
+            List<string> parameterNames = new List<string>();
+            scriptBlock.Ast.FindAll(
+                (ast) => {
+                    if (ast is ParameterAst) {
+                        ParameterAst paramAst = ast as ParameterAst;
+                        parameterNames.Add(paramAst.Name.VariablePath.UserPath.ToString());
+                    }
+                    return true;
+                },
+                false
+            );
+            return parameterNames.ToArray();
         }
  
         MemberInfo ResolveMethod(Type t, string methodName, MethodInvocationInfo methodInfo, out Object[] RealParameters)
@@ -363,10 +402,22 @@ namespace PSAdapter
             this.Cmdlet.WriteVerbose("Process instance method");
             ScriptBlock methodScriptBlock = GetMethodScriptBlock(methodInvocationInfo);
             if (methodScriptBlock != null) {
-                this.Cmdlet.WriteVerbose($"Invoking method script: {methodScriptBlock}");
-                foreach (var output in this.Cmdlet.SessionState.InvokeCommand.InvokeScript(methodScriptBlock.ToString(), objectInstance, methodInvocationInfo.Parameters)) {
-                    this.Cmdlet.WriteObject(output, false);
-                }                 
+                this.Cmdlet.WriteVerbose($"Invoking method script: {methodScriptBlock}");                
+                this.Cmdlet.SessionState.PSVariable.Set("this", this);
+                PowerShell psCmd = PowerShell.Create(RunspaceMode.CurrentRunspace).AddScript(methodScriptBlock.ToString());
+                foreach (string parameterName in this.GetScriptParameterName(methodScriptBlock)) {
+                    foreach (var methodParameter in methodInvocationInfo.Parameters) {
+                        if (string.Compare(methodParameter.Name, parameterName, true) == 0) {
+                            psCmd.AddParameter(parameterName, methodParameter.Value);
+                        }
+                    }
+                }
+                psCmd.AddArgument(methodInvocationInfo);
+                PSDataCollection<object> inputCollection = new PSDataCollection<object>();
+                inputCollection.Add(objectInstance);
+                PSInvocationSettings settings = new PSInvocationSettings();
+                psCmd.Invoke<object, PSObject>(inputCollection, OutputCollection, settings);
+                return;
             }
             if (objectInstance == null) { return; } 
             
@@ -378,6 +429,7 @@ namespace PSAdapter
             if (realMethod == null) {
                 this.Cmdlet.WriteVerbose(String.Format("Could not find {0} on type {1}", methodInvocationInfo.MethodName, this.ClassName));
             }
+
             try
             {
                 Object result = null;
@@ -390,19 +442,18 @@ namespace PSAdapter
                 {
                     if (result != null) {
                         this.Cmdlet.WriteObject(objectInstance, false);                        
-                    }
-                        
+                    }                        
                 }
                 else
                 {
                     if (result != null)
                     {
                         if (result is Task) {
+                            (result as Task).Wait(CancellationTokenSource.Token);
                             Pipeline awaitResultPipeline = Runspace.DefaultRunspace.CreateNestedPipeline(@"
-                            param($task)
-                            while (-not $task.IsCompleted) {}
-                            $task.Result
+                            param($task) $task.Result
                         ", true);
+                            awaitResultPipeline.Commands[0].Parameters.Add("this", this);
                             awaitResultPipeline.Commands[0].Parameters.Add("task", result);
                             foreach (PSObject awaitResult in awaitResultPipeline.Invoke()) {
                                 this.Cmdlet.WriteObject(awaitResult, true);
@@ -421,13 +472,23 @@ namespace PSAdapter
                 } else {
                     this.Cmdlet.WriteError(new ErrorRecord(ex, "PSDotNetAdapter.MethodInvocationError", ErrorCategory.InvalidOperation, objectInstance)); 
                 }                    
-            }
-            
+            }            
         }
  
         public override void ProcessRecord(MethodInvocationInfo methodInvocationInfo)
         {
             this.Cmdlet.WriteVerbose("Process Static Method");
+            ScriptBlock methodScriptBlock = GetMethodScriptBlock(methodInvocationInfo);
+            if (methodScriptBlock != null) {
+                this.Cmdlet.WriteVerbose("Invoking method script:" + methodScriptBlock.ToString());
+                this.Cmdlet.SessionState.PSVariable.Set("this", this);
+                PowerShell psCmd = PowerShell.Create(RunspaceMode.CurrentRunspace).AddScript(methodScriptBlock.ToString());
+                psCmd.AddArgument(methodInvocationInfo);
+                PSDataCollection<object> inputCollection = new PSDataCollection<object>();
+                PSInvocationSettings settings = new PSInvocationSettings();
+                psCmd.Invoke<object, PSObject>(inputCollection, OutputCollection, settings);                
+                return;
+            }
             string instanceScript = String.Empty;
             
             foreach (var kv in this.PrivateData) {
