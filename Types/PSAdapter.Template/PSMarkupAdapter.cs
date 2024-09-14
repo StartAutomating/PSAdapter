@@ -33,7 +33,7 @@ namespace PSAdapter
             if (this.ToMarkup == null)
             {
                 this.ToMarkup = ScriptBlock.Create(@"
-                    param($elementName, $dictionary, $privateData, $this)
+                    param($elementName, $dictionary, $this)
                     $invocationName = $this.Cmdlet.MyInvocation.InvocationName
                     $escapedInvocationName = '^' + ([Regex]::Escape($invocationName)) + '-'
                     if ($debugPreference -eq 'Continue') {
@@ -50,6 +50,11 @@ namespace PSAdapter
                         if ($dictionary[$parameterName] -match '^\s{0,}\S+') {
                             foreach ($elementNameKey in $myParameterPrivateData -match 'ElementName$') {
                                 $elementNameValue = $this.PrivateData[$elementNameKey]
+                                if ($elementNameValue -eq '.') {
+                                    [Security.SecurityElement]::Escape($dictionary[$parameterName])
+                                    $dictionary.Remove($parameterName)
+                                    continue
+                                }                                
                                 $childElementXml = (
                                     ""<$elementNameValue>"" + 
                                         [Security.SecurityElement]::Escape($dictionary[$parameterName]) + 
