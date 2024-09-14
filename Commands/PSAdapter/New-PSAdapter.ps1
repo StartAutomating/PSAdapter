@@ -30,6 +30,12 @@ function New-PSAdapter {
     [Collections.IDictionary]
     $TemplateParameter = @{},
 
+    # The namespace for the adapter.
+    # If this is not provided, it will use the name of the current repository.
+    [Parameter(ValueFromPipelineByPropertyName)]
+    [string]
+    $Namespace,
+
     # The output path for the adapter.
     [Parameter(ValueFromPipelineByPropertyName)]
     [string]
@@ -92,11 +98,21 @@ function New-PSAdapter {
         
         $templateString = $templateOutput -join [Environment]::NewLine
 
+        if (-not $Namespace) {
+            if ($env:GITHUB_REPOSITORY) {
+                $Namespace = $env:GITHUB_REPOSITORY -replace '/', '.'
+            } else {
+                $Namespace = 'PSAdapter'
+            }
+        }
+
+        $findCurrentNamespace = [Regex]::new("(?<!using\s+)(?<=namespace\s+)(?<Namespace>\S+)")
+
         $templateResult = 
             if ($templateString -as [xml]) {
                 $templateXml -as [xml]
-            } else {
-                $templateString
+            } else {                
+                $templateString -replace $findCurrentNamespace, $Namespace
             }
         
         if ($OutputPath) {
