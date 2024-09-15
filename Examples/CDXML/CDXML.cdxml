@@ -1,8 +1,7 @@
-
 <?xml version="1.0" encoding="utf-8"?>
 <PowerShellMetadata xmlns="http://schemas.microsoft.com/cmdlets-over-objects/2009/11">    
     <Class ClassName="CDXML" CmdletAdapter="PSAdapter.PSMarkupAdapter">
-        <Version>1.0</Version>
+        <Version>0.1</Version>
         <DefaultNoun>CDXML</DefaultNoun>
         <StaticCmdlets>
             <!-- New-CdXml -->
@@ -376,12 +375,31 @@
                     </ReturnValue>
                 </Method>
             </Cmdlet>
+            <!-- New-CdXmlValidateRange -->
+            <Cmdlet>
+                <CmdletMetadata Verb="New" Noun="CdXmlValidateRange" />
+                <Method MethodName="ValidateRange">
+                    <Parameters>
+                        <Parameter ParameterName="Min">
+                            <Type PSType="int" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" DefaultValue="0" />
+                        </Parameter>
+                        <Parameter ParameterName="Max">
+                            <Type PSType="int" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" DefaultValue="100" />
+                        </Parameter>
+                    </Parameters>
+                    <ReturnValue>
+                        <Type PSType="xml" />
+                    </ReturnValue>
+                </Method>
+            </Cmdlet>
         </StaticCmdlets>
         <CmdletAdapterPrivateData>
             <Data Name='New-CdXmlClass-Version_ElementName'>Version</Data>
             <Data Name='New-CdXmlClass-DefaultNoun_ElementName'>DefaultNoun</Data>
             <Data Name='New-CdXmlData-Value_ElementName'>.</Data>
-            <Data Name='New-CdXmlData-AllowedValue_ElementName'>AllowedValue</Data>
+            <Data Name='New-CdXmlValidateSet-AllowedValue_ElementName'>AllowedValue</Data>
         </CmdletAdapterPrivateData> 
     </Class>
     
