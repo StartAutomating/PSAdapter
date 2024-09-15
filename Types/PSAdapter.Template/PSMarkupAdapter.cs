@@ -57,9 +57,13 @@ namespace PSAdapter
                                 }
                                 $childElementXml = foreach ($childElement in $dictionary[$parameterName]) {
                                     (
-                                        ""<$elementNameValue>"" + 
-                                            [Security.SecurityElement]::Escape($childElement) + 
-                                        ""</$elementNameValue>""
+                                        if ($childElement -is [switch] -and $childElement) {
+                                            ""<$elementNameValue />""
+                                        } else {
+                                            ""<$elementNameValue>"" + 
+                                                [Security.SecurityElement]::Escape($childElement) + 
+                                            ""</$elementNameValue>""
+                                        }
                                     ) -as [xml]
                                 }                                
                                 
