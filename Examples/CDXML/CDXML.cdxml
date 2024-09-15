@@ -361,9 +361,9 @@
                     </ReturnValue>
                 </Method>
             </Cmdlet>
-            <!-- New-CdXmlAllowedValue -->
+            <!-- New-CdXmlValidateSet -->
             <Cmdlet>
-                <CmdletMetadata Verb="New" Noun="ValidateSet" />
+                <CmdletMetadata Verb="New" Noun="CdXmlValidateSet" />
                 <Method MethodName="ValidateSet">
                     <Parameters>
                         <Parameter ParameterName="AllowedValue">
