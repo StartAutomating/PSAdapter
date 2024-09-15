@@ -375,6 +375,25 @@
                     </ReturnValue>
                 </Method>                
             </Cmdlet>
+            <!-- New-CdXmlValidateCount -->
+            <Cmdlet>
+                <CmdletMetadata Verb="New" Noun="CdXmlValidateCount" />
+                <Method MethodName="ValidateCount">
+                    <Parameters>
+                        <Parameter ParameterName="Min">
+                            <Type PSType="uint" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" />
+                        </Parameter>
+                        <Parameter ParameterName="Max">
+                            <Type PSType="uint" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" />
+                        </Parameter>
+                    </Parameters>
+                    <ReturnValue>
+                        <Type PSType="xml" />
+                    </ReturnValue>
+                </Method>
+            </Cmdlet>
             <!-- New-CdXmlValidateLength -->
             <Cmdlet>
                 <CmdletMetadata Verb="New" Noun="CdXmlValidateLength" />
