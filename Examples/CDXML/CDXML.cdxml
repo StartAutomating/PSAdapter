@@ -320,6 +320,22 @@
                             <Type PSType="Uri" />
                             <CmdletParameterMetadata ValueFromPipelineByPropertyName="true"/>
                         </Parameter>
+                        <Parameter ParameterName="ValidateNotNull">
+                            <Type PSType="switch">
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true"/>
+                        </Parameter>
+                        <Parameter ParameterName="ValidateNotNullOrEmpty">
+                            <Type PSType="switch">
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true"/>
+                        </Parameter>
+                        <Parameter ParameterName="AllowEmptyString">
+                            <Type PSType="switch">
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true"/>
+                        </Parameter>
+                        <Parameter ParameterName="AllowNull">
+                            <Type PSType="switch">
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true"/>
+                        </Parameter>
                     </Parameters>
                     <ReturnValue>
                         <Type PSType="xml" />
@@ -431,14 +447,17 @@
                         <Type PSType="xml" />
                     </ReturnValue>
                 </Method>
-            </Cmdlet>
-            
+            </Cmdlet>            
         </StaticCmdlets>
         <CmdletAdapterPrivateData>
             <Data Name='New-CdXmlClass-Version_ElementName'>Version</Data>
             <Data Name='New-CdXmlClass-DefaultNoun_ElementName'>DefaultNoun</Data>
             <Data Name='New-CdXmlData-Value_ElementName'>.</Data>
             <Data Name='New-CdXmlValidateSet-AllowedValue_ElementName'>AllowedValue</Data>
+            <Data Name='New-CdXmlCmdletParameterMetadata-AllowNull_ElementName'>AllowNull</Data>
+            <Data Name='New-CdXmlCmdletParameterMetadata-AllowEmptyString_ElementName'>AllowEmptyString</Data>
+            <Data Name='New-CdXmlCmdletParameterMetadata-ValidateNotNull_ElementName'>ValidateNotNull</Data>
+            <Data Name='New-CdXmlCmdletParameterMetadata-ValidateNotNullOrEmpty_ElementName'>ValidateNotNullOrEmpty</Data>
         </CmdletAdapterPrivateData> 
     </Class>
     
