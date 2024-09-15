@@ -321,19 +321,19 @@
                             <CmdletParameterMetadata ValueFromPipelineByPropertyName="true"/>
                         </Parameter>
                         <Parameter ParameterName="ValidateNotNull">
-                            <Type PSType="switch">
+                            <Type PSType="switch" />
                             <CmdletParameterMetadata ValueFromPipelineByPropertyName="true"/>
                         </Parameter>
                         <Parameter ParameterName="ValidateNotNullOrEmpty">
-                            <Type PSType="switch">
+                            <Type PSType="switch" />
                             <CmdletParameterMetadata ValueFromPipelineByPropertyName="true"/>
                         </Parameter>
                         <Parameter ParameterName="AllowEmptyString">
-                            <Type PSType="switch">
+                            <Type PSType="switch" />
                             <CmdletParameterMetadata ValueFromPipelineByPropertyName="true"/>
                         </Parameter>
                         <Parameter ParameterName="AllowNull">
-                            <Type PSType="switch">
+                            <Type PSType="switch" />
                             <CmdletParameterMetadata ValueFromPipelineByPropertyName="true"/>
                         </Parameter>
                     </Parameters>
