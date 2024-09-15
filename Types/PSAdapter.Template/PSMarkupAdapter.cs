@@ -54,12 +54,15 @@ namespace PSAdapter
                                     [Security.SecurityElement]::Escape($dictionary[$parameterName])
                                     $dictionary.Remove($parameterName)
                                     continue
+                                }
+                                $childElementXml = foreach ($childElement in $dictionary[$parameterName]) {
+                                    (
+                                        ""<$elementNameValue>"" + 
+                                            [Security.SecurityElement]::Escape($dictionary[$parameterName]) + 
+                                        ""</$elementNameValue>""
+                                    ) -as [xml]
                                 }                                
-                                $childElementXml = (
-                                    ""<$elementNameValue>"" + 
-                                        [Security.SecurityElement]::Escape($dictionary[$parameterName]) + 
-                                    ""</$elementNameValue>""
-                                ) -as [xml]
+                                
                                 if ($childElementXml) {
                                     $childElementXml
                                     $dictionary.Remove($parameterName)
