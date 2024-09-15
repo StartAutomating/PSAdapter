@@ -936,7 +936,7 @@ namespace PSAdapter
                                 $childElementXml = foreach ($childElement in $dictionary[$parameterName]) {
                                     (
                                         ""&lt;$elementNameValue&gt;"" + 
-                                            [Security.SecurityElement]::Escape($dictionary[$parameterName]) + 
+                                            [Security.SecurityElement]::Escape($childElement) + 
                                         ""&lt;/$elementNameValue&gt;""
                                     ) -as [xml]
                                 }                                
