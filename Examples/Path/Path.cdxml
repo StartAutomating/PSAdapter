@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PowerShellMetadata xmlns="http://schemas.microsoft.com/cmdlets-over-objects/2009/11">
+    <Class ClassName="System.IO.Path" CmdletAdapter="PSAdapter.PSDotNetAdapter">
+        <Version>0.1</Version>
+        <DefaultNoun>Path</DefaultNoun>        
+        <StaticCmdlets>
+            <Cmdlet>
+                <CmdletMetadata Verb="Get" Noun="PathExtension" />                
+                <Method MethodName="GetExtension">
+                    <Parameters>
+                        <Parameter ParameterName="Path">
+                            <Type PSType="string" />
+                                <CmdletParameterMetadata Aliases="FullName" ValueFromPipeline="true" ValueFromPipelineByPropertyName="true" Position="0">
+                                    <AllowNull />
+                                </CmdletParameterMetadata>
+                        </Parameter>
+                    </Parameters>
+                    <ReturnValue>
+                        <Type PSType="String"  />
+                    </ReturnValue>
+                </Method>
+            </Cmdlet>
+            <Cmdlet>
+                <CmdletMetadata Verb="Get" Noun="PathName" />                
+                <Method MethodName="GetFileName">
+                    <Parameters>
+                        <Parameter ParameterName="Path">
+                            <Type PSType="string" />
+                                <CmdletParameterMetadata Aliases="FullName" ValueFromPipeline="true" ValueFromPipelineByPropertyName="true" Position="0">
+                                    <AllowNull />
+                                </CmdletParameterMetadata>
+                        </Parameter>
+                    </Parameters>
+                    <ReturnValue>
+                        <Type PSType="String"  />
+                    </ReturnValue>
+                </Method>
+            </Cmdlet>
+            <Cmdlet>
+                <CmdletMetadata Verb="Get" Noun="PathRoot" />                
+                <Method MethodName="GetPathRoot">
+                    <Parameters>
+                        <Parameter ParameterName="Path">
+                            <Type PSType="string" />
+                                <CmdletParameterMetadata Aliases="FullName" ValueFromPipeline="true" ValueFromPipelineByPropertyName="true" Position="0">
+                                    <AllowNull />
+                                </CmdletParameterMetadata>
+                        </Parameter>
+                    </Parameters>
+                    <ReturnValue>
+                        <Type PSType="String"  />
+                    </ReturnValue>
+                </Method>
+            </Cmdlet>
+            <Cmdlet>
+                <CmdletMetadata Verb="Get" Noun="PathRandom" />                
+                <Method MethodName="GetRandomFileName">
+                    <ReturnValue>
+                        <Type PSType="string"  />
+                    </ReturnValue>
+                </Method>
+            </Cmdlet>
+            <Cmdlet>
+                <CmdletMetadata Verb="Get" Noun="PathInvalid" />                
+                <Method MethodName="get_InvalidPathChars">                    
+                    <ReturnValue>
+                        <Type PSType="char[]"  />
+                    </ReturnValue>
+                </Method>
+            </Cmdlet>
+            <Cmdlet>
+                <CmdletMetadata Verb="Get" Noun="PathSeparator" />
+                <Method MethodName="get_PathSeparator">                    
+                    <ReturnValue>
+                        <Type PSType="char" />
+                    </ReturnValue>
+                </Method>
+            </Cmdlet>
+        </StaticCmdlets>        
+    </Class> 
+</PowerShellMetadata>
