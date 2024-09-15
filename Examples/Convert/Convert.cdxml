@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PowerShellMetadata xmlns="http://schemas.microsoft.com/cmdlets-over-objects/2009/11">
+    <Class ClassName="System.Convert" CmdletAdapter="PSAdapter.PSDotNetAdapter">
+        <Version>0.1</Version>
+        <DefaultNoun>Path</DefaultNoun>        
+        <StaticCmdlets>
+            <Cmdlet>
+                <CmdletMetadata Verb="ConvertTo" Noun="Base64" />                
+                <Method MethodName="ToBase64String">
+                    <Parameters>
+                        <Parameter ParameterName="InputArray">
+                            <Type PSType="byte[]" />
+                                <CmdletParameterMetadata Aliases="Input In Buffer Byte Bytes" ValueFromPipeline="true" ValueFromPipelineByPropertyName="true" Position="0" />                                
+                        </Parameter>
+                    </Parameters>
+                    <ReturnValue>
+                        <Type PSType="String"  />
+                    </ReturnValue>
+                </Method>
+            </Cmdlet>
+            <Cmdlet>
+                <CmdletMetadata Verb="ConvertTo" Noun="Hex" />                
+                <Method MethodName="ToHexString">
+                    <Parameters>
+                        <Parameter ParameterName="InputArray">
+                            <Type PSType="byte[]" />
+                                <CmdletParameterMetadata Aliases="Input In Buffer Byte Bytes" ValueFromPipeline="true" ValueFromPipelineByPropertyName="true" Position="0" />                                
+                        </Parameter>
+                    </Parameters>
+                    <ReturnValue>
+                        <Type PSType="String"  />
+                    </ReturnValue>
+                </Method>
+            </Cmdlet>
+            <Cmdlet>
+                <CmdletMetadata Verb="ConvertFrom" Noun="Hex" />
+                <Method MethodName="FromHexString">
+                    <Parameters>
+                        <Parameter ParameterName="HexString">
+                            <Type PSType="string" />
+                                <CmdletParameterMetadata Aliases="Input In Buffer String Str" ValueFromPipeline="true" ValueFromPipelineByPropertyName="true" Position="0" />                                
+                        </Parameter>
+                    </Parameters>
+                    <ReturnValue>
+                        <Type PSType="byte[]"  />
+                    </ReturnValue>
+                </Method>
+            </Cmdlet>
+            <Cmdlet>
+                <CmdletMetadata Verb="ConvertFrom" Noun="Base64" />
+                <Method MethodName="FromBase64String">
+                    <Parameters>
+                        <Parameter ParameterName="Base64String">
+                            <Type PSType="string" />
+                                <CmdletParameterMetadata Aliases="Input In Buffer String Str" ValueFromPipeline="true" ValueFromPipelineByPropertyName="true" Position="0" />                                
+                        </Parameter>
+                    </Parameters>
+                    <ReturnValue>
+                        <Type PSType="byte[]"  />
+                    </ReturnValue>
+                </Method>
+            </Cmdlet>
+        </StaticCmdlets>        
+    </Class> 
+</PowerShellMetadata>
+
