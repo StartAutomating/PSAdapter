@@ -64,13 +64,7 @@ foreach  ($classScript in @(Get-ChildItem -Path ($myModule.Path | Split-Path) -F
     $classScriptFile = $ExecutionContext.SessionState.InvokeCommand.GetCommand($classScript.FullName, 'ExternalScript')
     $classNamesInFile = $classScriptFile.ScriptBlock.Ast.FindAll({param($ast) $ast -is [Management.Automation.Language.TypeDefinitionAst]}, $false).Name
     . $classScript.FullName
-    foreach ($className in $classNamesInFile) {
-        $myFullClassName = 
-            if ($className -ne $MyModule.Name) {
-                "$($myModule.Name).$className"
-            } else {
-                $className
-            }
+    foreach ($className in $classNamesInFile) {        
         $accelerators::Remove($myFullClassName)
         $accelerators::Add($myFullClassName, ($className -as [type]))
     }
