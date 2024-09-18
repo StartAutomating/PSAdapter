@@ -74,8 +74,8 @@ foreach  ($classScript in @(Get-ChildItem -Path ($myModule.Path | Split-Path) -F
     $classNamesInFile = $classScriptFile.ScriptBlock.Ast.FindAll({param($ast) $ast -is [Management.Automation.Language.TypeDefinitionAst]}, $false).Name
     . $classScript.FullName
     foreach ($className in $classNamesInFile) {        
-        $accelerators::Remove($myFullClassName)
-        $accelerators::Add($myFullClassName, ($className -as [type]))
+        $accelerators::Remove($className)
+        $accelerators::Add($className, ($className -as [type]))
     }
 }
 #endregion Custom
