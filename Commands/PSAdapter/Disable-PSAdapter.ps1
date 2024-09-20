@@ -14,7 +14,11 @@ function Disable-PSAdapter {
     [Parameter(ValueFromPipelineByPropertyName)]
     [Alias('ModuleName','Name')]
     [string[]]
-    $AdapterName
+    $AdapterName,
+
+    # If set, will output the disabled module before it is removed.
+    [switch]
+    $PassThru
     )
 
     begin {
@@ -26,6 +30,7 @@ function Disable-PSAdapter {
             foreach ($name in $AdapterName) {
                 foreach ($loadedModule in $loadedModules) {
                     if ($loadedModule.Path -match "$([Regex]::Escape($Name))\.cdxml$") {
+                        if ($PassThru) { $loadedModule }
                         Remove-Module -ModuleInfo $loadedModule -Force
                         break
                     }
