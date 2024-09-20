@@ -14,7 +14,11 @@ function Enable-PSAdapter {
     [Parameter(ValueFromPipelineByPropertyName)]
     [Alias('ModuleName','Name')]
     [string[]]
-    $AdapterName
+    $AdapterName,
+
+    # If set, will output the enabled module.
+    [switch]
+    $PassThru
     )
 
     begin {
