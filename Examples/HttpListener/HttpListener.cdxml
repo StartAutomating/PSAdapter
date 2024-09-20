@@ -1,10 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PowerShellMetadata xmlns="http://schemas.microsoft.com/cmdlets-over-objects/2009/11">
-    <Class ClassName="System.Net.HttpListener" CmdletAdapter="PSAdapter.PSDotNetAdapter">
+    <Class ClassName="System.Net.HttpListener" CmdletAdapter="PSAdapter">
         <Version>1.0</Version>
         <DefaultNoun>HttpListener</DefaultNoun>
         <InstanceCmdlets>
-            <GetCmdletParameters />                
+            <GetCmdletParameters>
+                <QueryableProperties>
+                    <Property PropertyName="IsListening">
+                        <Type PSType="Switch" />
+                        <RegularQuery AllowGlobbing="false">
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" />
+                        </RegularQuery>
+                    </Property>
+                </QueryableProperties>   
+            </GetCmdletParameters>
             <Cmdlet>
                 <CmdletMetadata Verb="Start" Noun="HttpListener"/>
                 <Method MethodName="Start">
@@ -15,7 +24,21 @@
             </Cmdlet>
             <Cmdlet>
                 <CmdletMetadata Verb="Stop" Noun="HttpListener"/>
-                <Method MethodName="Abort">
+                <Method MethodName="Stop">
+                    <ReturnValue>
+                        <Type PSType='System.Void' />
+                    </ReturnValue>
+                </Method>  
+            </Cmdlet>
+            <Cmdlet>
+                <CmdletMetadata Verb="Add" Noun="HttpListener"/>
+                <Method MethodName="{param($prefix) $_.Prefixes.Add($Prefix)}">
+                    <Parameters>
+                        <Parameter ParameterName="Prefix">
+                            <Type PSType="string" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" Position="0" />
+                        </Parameter>
+                    </Parameters>
                     <ReturnValue>
                         <Type PSType='System.Void' />
                     </ReturnValue>
@@ -23,17 +46,31 @@
             </Cmdlet>
             <Cmdlet>
                 <CmdletMetadata Verb="Wait" Noun="HttpListener"/>
-                <Method MethodName="GetContext">
+                <Method MethodName="GetContextAsync">                    
                     <ReturnValue>
                         <Type PSType='Net.HttpListenerContext' />
                     </ReturnValue>
                 </Method>  
+            </Cmdlet>
+            <Cmdlet>
+                <CmdletMetadata Verb="Watch" Noun="HttpListener"/>                
+                <Method MethodName="Watch">                    
+                    <Parameters>                        
+                        <Parameter ParameterName="Handler">
+                            <Type PSType="ScriptBlock" />
+                            <CmdletParameterMetadata Aliases="OnRequest" ValueFromPipelineByPropertyName="true" Position="0" />
+                        </Parameter>
+                    </Parameters>
+                    <ReturnValue>
+                        <Type PSType='Management.Automation.Job' />
+                    </ReturnValue>
+                </Method>  
             </Cmdlet>            
         </InstanceCmdlets>
-        <StaticCmdlets>
+        <StaticCmdlets>            
             <Cmdlet>
                 <CmdletMetadata Verb="New" />
-                <Method MethodName=":Constructor">                
+                <Method MethodName="new">                
                     <ReturnValue>
                         <Type PSType="System.Net.HttpListener" />
                     </ReturnValue>
@@ -41,7 +78,34 @@
               </Cmdlet>
         </StaticCmdlets>
         <CmdletAdapterPrivateData>
-            
+            <Data Name="Watch-HttpListener.Watch">
+                param($Handler) 
+                $httpListener = $_
+                if (-not $httpListener.IsListening) {
+                    $httpListener.Start()
+                }
+                if (-not $httpListener.IsListening) { return }
+                Start-ThreadJob -ScriptBlock {
+                    param([Collections.IDictionary]$Parameter)
+                    foreach ($keyValue in $parameter.GetEnumerator()) {
+                        $executionContext.SessionState.PSVariable.Set($keyValue.Key, $keyValue.Value)
+                    }
+                    while ($httpListener.IsListening) {
+                        try {
+                            $contextAsync = $httpListener.GetContextAsync()
+                            $context = $contextAsync.Result
+                            if ($handler) {
+                                $handler.Invoke($context)                                
+                            }
+                        } catch {
+                            Write-Error $_
+                        }                            
+                    }
+                } -ArgumentList ([Ordered]@{
+                    HttpListener = $HttpListener
+                    Handler = $Handler
+                }) -Name ($httpListener.Prefixes -join ';' -replace 'https?://' -replace 'localhost')            
+            </Data>
         </CmdletAdapterPrivateData>
     </Class>    
 </PowerShellMetadata>
