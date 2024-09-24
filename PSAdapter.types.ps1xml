@@ -216,7 +216,7 @@ class PSAdapterBase : Microsoft.PowerShell.Cmdletization.CmdletAdapter[PSObject]
             $hashCodeList = [Collections.Generic.List[int]]::new()
             foreach ($var in Get-Variable) {
                 $varHashCode = 
-                    if ($var.Value.GetHashCode) { $var.Value.GetHashCode([StringComparison]::OrdinalIgnoreCase) }
+                    if ($var.Value.GetHashCode) { $var.Value.GetHashCode() }
                     else { continue }                
                 if ($hashCodeList.Contains($varHashCode)) { continue }
                 if ($this.ResolvedClass -is [type] -and 
