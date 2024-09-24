@@ -17,10 +17,17 @@
     The QueryBuilder class is responsible for building the query that will be used to filter the instances.    
 #> 
 class PSAdapterQueryBuilder : Microsoft.PowerShell.Cmdletization.QueryBuilder {
+    # The query options.
     [Collections.IDictionary] $QueryOption = [Ordered]@{}
+    # The query filter list.
     [Collections.Generic.List[PSObject]] $QueryFilterList = [Collections.Generic.List[PSObject]]::new()
+    # The adapter.
     [PSAdapter] $Adapter
-    PSAdapterQueryBuilder([PSAdapter]$adapter) {
+    # PSAdapterQueryBuilder constructor.
+    PSAdapterQueryBuilder(
+        # The adapter.
+        [PSAdapter]$adapter
+    ) {        
         $this.Adapter = $adapter
     }
     AddQueryOption([string] $name, [object] $value) {
@@ -179,18 +186,24 @@ class PSAdapterBase : Microsoft.PowerShell.Cmdletization.CmdletAdapter[PSObject]
     }
     
     [object[]] GetInstances() {
-        return @(            
+        return @(
+            $hashCodeList = [Collections.Generic.List[int]]::new()
             foreach ($var in Get-Variable) {
-                if ($this.ResolvedClass -is [type] -and $var.Value -is $this.ResolvedClass) {
+                $varHashCode = 
+                    if ($var.Value.GetHashCode) { $var.Value.GetHashCode([StringComparison]::OrdinalIgnoreCase) }
+                    else { continue }                
+                if ($hashCodeList.Contains($varHashCode)) { continue }
+                if ($this.ResolvedClass -is [type] -and 
+                    $var.Value -is $this.ResolvedClass) {
                     $var.Value
-                }    
+                    $hashCodeList.Add($varHashCode)
+                }
                 elseif ($var.pstypenames -match $(
                     if ($this.ClassName -match '^/' -and $this.ClassName -match '/$') {
                         [Regex]::new($this.ClassName -replace '^/' -replace '/$', 'IgnoreCase,IgnorePatternWhitespace','00:00:01')
                     } else {
                         [Regex]::Escape($this.ClassName)
-                    }
-                    
+                    }                    
                 )) {
                     $var.Value
                 }
@@ -308,9 +321,9 @@ class PSAdapterBase : Microsoft.PowerShell.Cmdletization.CmdletAdapter[PSObject]
         $this.Cmdlet.WriteVerbose("Processing static method invocation: $($methodInvocationInfo.MethodName)")
         $methodSplat = $this.GetMethodSplat($MethodInvocationInfo)
         if ($methodSplat) {
-            $methodCommandOutput = . $methodSplat.Command @methodSplat &>*1
+            $methodCommandOutput = . $methodSplat.Command @methodSplat *>&1
             
-            $this.Cmdlet.WriteObject($methodCommandOutput)
+            $this.Cmdlet.WriteObject($methodCommandOutput, $true)
             
             return
         }
@@ -331,8 +344,6 @@ class PSAdapterBase : Microsoft.PowerShell.Cmdletization.CmdletAdapter[PSObject]
             $typeData = Get-TypeData -TypeName $this.ClassName
             if (-not $typeData) { return }
         }
-        
-
     }    
     EndProcessing() {
         $this.Cmdlet.WriteVerbose("Ending processing")
