@@ -12,7 +12,7 @@ function New-PSAdapter {
     [Parameter(ValueFromPipelineByPropertyName)]
     [ArgumentCompleter({
         param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter) 
-        $typeData = Get-TypeData -TypeName "PSAdapter.Template"
+        $typeData = Get-TypeData -TypeName "PSAdapter.[ct]*"
         return $typeData.Members.Keys -match "$([Regex]::Escape($wordToComplete))"
     })]
     [PSObject]
@@ -43,7 +43,8 @@ function New-PSAdapter {
     )
 
     process {
-                
+
+        $templateSource = $null
         $foundTemplateCommands = @(
             if ($template -is [Management.Automation.CommandInfo] -or
                 $template -is [ScriptBlock]) {
@@ -51,28 +52,36 @@ function New-PSAdapter {
             } else {
                 $escapedName = [Regex]::Escape("$Template")
 
-                $typeData = Get-TypeData -TypeName "PSAdapter.Template"
-                foreach ($foundKey in $typeData.Members.Keys -match "^$escapedName") {
-                    if ($typeData.Members[$foundKey].RefeferencedMemberName) {
-                        $foundKey = $typeData.Members[$foundKey].RefeferencedMemberName
-                    }
-    
-                    if ($typeData.Members[$foundKey].Script) {
-                        $typeData.Members[$foundKey].Script
-                    }
-                    elseif ($typeData.Members[$foundKey].GetterScript) {
-                        $typeData.Members[$foundKey].GetterScript
-                    } elseif ($typeData.Members[$foundKey].Value) {
-                        $typeData.Members[$foundKey].Value
+                foreach ($typeData in Get-TypeData -TypeName "PSAdapter.Template", "PSAdapter.Class") {
+                    foreach ($foundKey in $typeData.Members.Keys -match "^$escapedName") {
+                        if ($typeData.Members[$foundKey].RefeferencedMemberName) {
+                            $foundKey = $typeData.Members[$foundKey].RefeferencedMemberName
+                        }
+        
+                        if ($typeData.Members[$foundKey].Script) {
+                            $typeData.Members[$foundKey].Script
+                        }
+                        elseif ($typeData.Members[$foundKey].GetterScript) {
+                            $typeData.Members[$foundKey].GetterScript
+                        } elseif ($typeData.Members[$foundKey].Value) {
+                            $typeData.Members[$foundKey].Value
+                        } else {
+                            continue
+                        }                        
                     }
                 }
     
                 $ExecutionContext.SessionState.InvokeCommand.GetCommands('*Template*','Function,Alias', $true) -match 'Adapter'
-            }
-
-            
-            
+            }                        
         )
+
+        if (-not $Namespace) {
+            if ($env:GITHUB_REPOSITORY) {
+                $Namespace = $env:GITHUB_REPOSITORY -replace '/', '.'
+            } else {
+                $Namespace = 'PSAdapter'
+            }
+        }
 
         $templateOutput = 
             foreach ($foundTemplateCommand in $foundTemplateCommands) {
@@ -82,7 +91,7 @@ function New-PSAdapter {
                 }
                 if ($TemplateParameter) {
                     if ($TemplateArgument) {
-                        & $foundTemplateCommand @TemplateArgument @TemplateParameter 
+                        & $foundTemplateCommand @TemplateArgument @TemplateParameter
                     } else {
                         & $foundTemplateCommand @TemplateParameter
                     }
@@ -94,21 +103,34 @@ function New-PSAdapter {
                     $foundTemplateCommand
                 }
             }
-        
-        
-        $templateString = $templateOutput -join [Environment]::NewLine
+                        
+        $templateOutputAsScriptBlock = 
+            try {
+                if ($templateOutput -is [scriptblock]) {
+                    $templateOutput
+                } else {
+                    [scriptblock]::Create($templateOutput)
+                }
+            } catch {
+                $ex = $_                
+                $null
+            }
 
-        if (-not $Namespace) {
-            if ($env:GITHUB_REPOSITORY) {
-                $Namespace = $env:GITHUB_REPOSITORY -replace '/', '.'
-            } else {
-                $Namespace = 'PSAdapter'
+        $templateString = $templateOutput -join [Environment]::NewLine
+        
+        if ($templateOutputAsScriptBlock) {
+            $foundTemplateClasses = $templateOutputAsScriptBlock.Ast.FindAll({param($ast) $ast -is [Management.Automation.Language.TypeDefinitionAst]}, $true)
+            if ($foundTemplateClasses) {
+                $templateString =
+                    $foundTemplateClasses.Extent -as [string[]] -replace 
+                        'PSAdapter', ($Namespace -replace '\.', '_') -join
+                            [Environment]::NewLine
             }
         }
-
+        
         $findCurrentNamespace = [Regex]::new("(?<!using\s+)(?<=namespace\s+)(?<Namespace>\S+)")
 
-        $templateResult = 
+        $templateResult =
             if ($templateString -as [xml]) {
                 $templateXml -as [xml]
             } else {                
@@ -118,12 +140,12 @@ function New-PSAdapter {
         if ($OutputPath) {
             if ($templateResult -is [xml]) {
                 $templateResult.Save($OutputPath)
+                if ($?) {
+                    Get-Item -Path $outputPath
+                }
             } else {
-                $templateResult | Out-File -FilePath $OutputPath
-            }
-            if ($?) {
-                Get-Item -Path $outputPath
-            }
+                New-Item -Path $filePath -Force -Value $templateResult
+            }            
         } else {
             $templateResult
         }
