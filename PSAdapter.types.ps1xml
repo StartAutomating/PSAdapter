@@ -1,0 +1,1826 @@
+<!-- Generated with EZOut 2.0.6: Install-Module EZOut or https://github.com/StartAutomating/EZOut -->
+<Types>
+  <Type>
+    <Name>PSAdapter</Name>
+    <Members>
+      <ScriptProperty>
+        <Name>PSAdapterType</Name>
+        <GetScriptBlock>
+                        if ($this -is [Management.Automation.PSModuleInfo]) {
+    'Module'
+} 
+elseif ($this -is [type]) {
+    'Type'
+}
+elseif ($this -is [System.IO.FileInfo]) {
+    'File'
+}
+                    </GetScriptBlock>
+      </ScriptProperty>
+    </Members>
+  </Type>
+  <Type>
+    <Name>PSAdapter.Class</Name>
+    <Members>
+      <NoteProperty>
+        <Name>PSAdapter.class.ps1</Name>
+        <Value>&lt;#
+.SYNOPSIS
+    This contains the PSAdapter class.
+.DESCRIPTION
+    This contains the definition of the PSAdapter class and other classes used to build a CmdletAdapter.
+#&gt;
+
+
+&lt;#
+.SYNOPSIS
+    The Query Builder for the PSAdapter class.
+.DESCRIPTION
+    The Query Builder for the PSAdapter class.
+
+    Any CmdletAdapter that wants to work with instances needs to implement a QueryBuilder class.
+    
+    The QueryBuilder class is responsible for building the query that will be used to filter the instances.    
+#&gt; 
+class PSAdapterQueryBuilder : Microsoft.PowerShell.Cmdletization.QueryBuilder {
+    # The query options.
+    [Collections.IDictionary] $QueryOption = [Ordered]@{}
+    # The query filter list.
+    [Collections.Generic.List[PSObject]] $QueryFilterList = [Collections.Generic.List[PSObject]]::new()
+    # The adapter.
+    [PSAdapter] $Adapter
+    # PSAdapterQueryBuilder constructor.
+    PSAdapterQueryBuilder(
+        # The adapter.
+        [PSAdapter]$adapter
+    ) {        
+        $this.Adapter = $adapter
+    }
+    AddQueryOption([string] $name, [object] $value) {
+        $this.QueryOption[$name] = $value
+        $this.Adapter.Cmdlet.WriteVerbose("Added query option '$name' with value '$value'")
+    }
+    ExcludeByProperty([string] $propertyName, [Collections.IEnumerable]$ExcludePropertyValue, [object] $propertyValue, [Microsoft.PowerShell.Cmdletization.BehaviorOnNoMatch] $behaviorOnNoMatch) {
+        $This.QueryFilterList.Add([PSCustomObject]([Ordered]@{
+            FilterType = "ExcludeByProperty"
+        } + $PSBoundParameters))
+        $this.Adapter.Cmdlet.WriteVerbose("Excluded by property '$propertyName' with value '$propertyValue'")
+    }
+    FilterByAssociation([object]$AssociatedInstance, [string]$AssociationName, [string]$SourceRole, [string]$ResultRole, [Microsoft.PowerShell.Cmdletization.BehaviorOnNoMatch]$behaviorOnNoMatch) {
+        $this.Adapter.Cmdlet.WriteVerbose("Filtered by association '$AssociationName' with associated instance '$AssociatedInstance'")
+    }
+    FilterByProperty([string] $propertyName, [Collections.IEnumerable]$AllowedPropertyValue, [bool] $wildcardsEnabled, [Microsoft.PowerShell.Cmdletization.BehaviorOnNoMatch] $behaviorOnNoMatch) {
+        $This.QueryFilterList.Add([PSCustomObject]([Ordered]@{
+            FilterType = "FilterByProperty"
+        } + $PSBoundParameters))
+        $this.Adapter.Cmdlet.WriteVerbose("Filtered property value '$propertyName' with value '$AllowedPropertyValue'")
+    }
+    FilterByMinPropertyValue([string]$propertyName, [object]$MinValue, [Microsoft.PowerShell.Cmdletization.BehaviorOnNoMatch] $behaviorOnNoMatch) {
+        $This.QueryFilterList.Add([PSCustomObject]([Ordered]@{
+            FilterType = "FilterByMinPropertyValue"
+        } + $PSBoundParameters))
+        $this.Adapter.Cmdlet.WriteVerbose("Filtered by MinValue value '$propertyName' with value '$MinValue'")
+    }
+    FilterByMaxPropertyValue([string]$propertyName, [object]$MaxValue, [Microsoft.PowerShell.Cmdletization.BehaviorOnNoMatch] $behaviorOnNoMatch) {
+        $This.QueryFilterList.Add([PSCustomObject]([Ordered]@{
+            FilterType = "FilterByMaxPropertyValue"
+        } + $PSBoundParameters))
+        $this.Adapter.Cmdlet.WriteVerbose("Filtered by MaxValue '$propertyName' with value '$MaxValue'")
+    }
+    [bool] MatchesFilters([object]$Instance) {
+        $QueryBuilder = $this
+        :nextQueryFilter foreach ($queryFilterItem in $QueryBuilder.QueryFilterList) {            
+            $InstancePropertyValue = $Instance.$($queryFilterItem.PropertyName)
+            switch ($queryFilterItem.FilterType) {
+                FilterByProperty {
+                    if ($queryFilterItem.WildcardsEnabled) {
+                        foreach ($wildcard in $queryFilterItem.AllowedPropertyValue) {
+                            if ($InstancePropertyValue -like $wildcard) {                                
+                                continue nextQueryFilter
+                            }
+                        }
+                        return $false
+                    } else {
+                        if ($InstancePropertyValue -notin $queryFilterItem.AllowedPropertyValue) {
+                            if ($queryFilterItem.BehaviorOnNoMatch -eq 'ReportErrors') {
+                                $this.Adapter.Cmdlet.WriteError("Property value $($queryFilterItem.PropertyName) is not in the allowed list")                             
+                            }
+                            return $false
+                        }
+                    }
+                    
+                    
+                }
+                FilterByMinPropertyValue {
+                    if ($InstancePropertyValue -lt $queryFilterItem.MinValue) {
+                        if ($queryFilterItem.BehaviorOnNoMatch -eq 'ReportErrors') {
+                            $this.Adapter.Cmdlet.WriteError("Property value $($queryFilterItem.PropertyName) is less than the minimum value")                                    
+                        }
+                        return $false
+                    }
+                }
+                FilterByMaxPropertyValue {
+                    if ($InstancePropertyValue -gt $queryFilterItem.MaxValue) {
+                        if ($queryFilterItem.BehaviorOnNoMatch -eq 'ReportErrors') {
+                            $this.Adapter.Cmdlet.WriteError("Property value $($queryFilterItem.PropertyName) is greater than the maximum value")                                    
+                        }
+                        return $false
+                    }
+                }
+                ExcludeByProperty {
+                    if ($queryFilterItem.WildcardsEnabled) {
+                        foreach ($wildcard in $queryFilterItem.ExcludePropertyValue) {
+                            if ($InstancePropertyValue -like $wildcard) {                                
+                                return $false
+                            }
+                        }
+                    } else {
+                        if ($InstancePropertyValue -in $queryFilterItem.ExcludePropertyValue) {
+                            if ($queryFilterItem.BehaviorOnNoMatch -eq 'ReportErrors') {
+                                $this.Adapter.Cmdlet.WriteError("Property value $($queryFilterItem.PropertyName) is in the exclude list")                                    
+                            }
+                            return $false
+                        }
+                    }                    
+                }
+            }            
+        }
+        return $true
+    }
+}
+
+
+class PSAdapterBase : Microsoft.PowerShell.Cmdletization.CmdletAdapter[PSObject]
+{
+    [Microsoft.PowerShell.Cmdletization.QueryBuilder] GetQueryBuilder() {
+        $this.Cmdlet.WriteVerbose("Getting query builder")
+        $queryBuilder = [PSAdapterQueryBuilder]::new($this)        
+        return $queryBuilder
+    }
+    [object] $ResolvedClass = $null
+    [Collections.Generic.List[Threading.Tasks.Task]] $Tasks = [Collections.Generic.List[Threading.Tasks.Task]]::new()
+    static [Ordered] $ResolvedClasses = [Ordered]@{}
+    ResolveClass() {
+        if ($This::ResolvedClasses[$this.ClassName]) {
+            $this.ResolvedClass = $This::ResolvedClasses[$this.ClassName]
+            return
+        }
+        if ($this.ClassName -as [type]) {
+            $this.ResolvedClass = $this.ClassName -as [type]
+        }
+        elseif ( $(
+            $typeExists = [type]::GetType($this.ClassName, $false, $true)
+            $typeExists
+        )) {
+            $this.ResolvedClass = $typeExists
+        }
+        elseif ($(
+            $foundCommand = $this.Cmdlet.SessionState.InvokeCommand.GetCommand($this.ClassName, 'Cmdlet,Function,Alias')
+            $foundCommand
+        )) {
+            $this.ResolvedClass = $foundCommand
+        } elseif ($(
+            $foundVariable = $this.Cmdlet.SessionState.PSVariable.Get($this.ClassName)
+            $foundVariable
+        )) {
+            $this.ResolvedClass = $foundVariable.Value
+        }
+        if ($this.ResolvedClass) {
+            $This::ResolvedClasses[$this.ClassName] = $this.ResolvedClass
+        }
+        $this.Cmdlet.WriteVerbose("Class resolved to $($this.ResolvedClass)")
+    }
+
+    [object] GetDynamicParameters() {        
+        
+        $this.Cmdlet.WriteVerbose("Getting dynamic parameters")
+        [Management.Automation.RuntimeDefinedParameterDictionary] $runtimeParameters = 
+            [Management.Automation.RuntimeDefinedParameterDictionary]::new()
+        $this.ResolveClass()
+        if ($this.ResolvedClass) {
+            if ($this.ResolvedClass -is [Management.Automation.CommandInfo]) {
+                foreach ($parameter in $this.ResolvedClass.Parameters.Values) {
+                    if ($this.Cmdlet.Parameters.ContainsKey($parameter.Name)) {
+                        continue
+                    }
+                    [Management.Automation.RuntimeDefinedParameter]::new($parameter.Name, $parameter.ParameterType, $parameter.Attributes)                    
+                }
+                
+            }
+        }
+        return $null
+    }
+    
+    [object[]] GetInstances() {
+        return @(
+            $hashCodeList = [Collections.Generic.List[int]]::new()
+            foreach ($var in Get-Variable) {
+                $varHashCode = 
+                    if ($var.Value.GetHashCode) { $var.Value.GetHashCode() }
+                    else { continue }                
+                if ($hashCodeList.Contains($varHashCode)) { continue }
+                if ($this.ResolvedClass -is [type] -and 
+                    $var.Value -is $this.ResolvedClass) {
+                    $var.Value
+                    $hashCodeList.Add($varHashCode)
+                }
+                elseif ($var.pstypenames -match $(
+                    if ($this.ClassName -match '^/' -and $this.ClassName -match '/$') {
+                        [Regex]::new($this.ClassName -replace '^/' -replace '/$', 'IgnoreCase,IgnorePatternWhitespace','00:00:01')
+                    } else {
+                        [Regex]::Escape($this.ClassName)
+                    }                    
+                )) {
+                    $var.Value
+                }
+            }
+        )        
+    }
+    [psobject] GetMethodSplat([Microsoft.PowerShell.Cmdletization.MethodInvocationInfo] $MethodInvocationInfo) {
+        $methodName = $MethodInvocationInfo.MethodName
+        $myInvocationNamePattern = "^$([Regex]::Escape($this.Cmdlet.MyInvocation.InvocationName))"
+        $myScriptPrivateDataKeys = $this.PrivateData.Keys -match $myInvocationNamePattern -match "[\.\:]{1,2}$([Regex]::Escape($methodName))"
+        $methodScriptBlock = if ($myScriptPrivateDataKeys) {
+            [ScriptBlock]::Create(($this.PrivateData[$myScriptPrivateDataKeys] -join [Environment]::NewLine))
+        } elseif ($MethodName -match '^\s{0,}\{' -and $methodName -match '\}\s{0,}$') {
+            $methodName = $methodName -replace '^\s{0,}\{' -replace '\}\s{0,}$'
+            [scriptblock]::Create($methodName)
+        }
+        if (-not $methodScriptBlock) {            
+            return $null
+        }
+            
+        $methodScriptParameters = 
+            $methodScriptBlock.Ast.FindAll({
+                param($ast) 
+                $ast -is [Management.Automation.Language.ParameterAst] -or 
+                ($ast -is [System.Management.Automation.Language.AttributeAst] -and $ast.TypeName.Name -eq 'Alias')
+            }, $false)
+        $methodScriptParameterNames = 
+            @(foreach ($ast in $methodScriptParameters) {
+                if ($ast -is [Management.Automation.Language.ParameterAst]) {
+                    $ast.Name.VariablePath.UserPath
+                } else {
+                    $ast.PostionalArguments.Value
+                }
+            })
+        $methodSplat = [Ordered]@{}
+        foreach ($parameter in $MethodInvocationInfo.Parameters) {
+            if ($methodScriptParameterNames -contains $parameter.Name -and $null -ne $parameter.Value) {
+                $methodSplat[$parameter.Name] = $parameter.Value
+            }
+        }
+        $methodSplat.psobject.properties.add([psnoteproperty]::new('Command', $methodScriptBlock))
+        return $methodSplat
+    
+    }
+    BeginProcessing() {
+        $this.Cmdlet.WriteVerbose("Beginning processing") 
+    }
+    StopProcessing() {
+        $this.Cmdlet.WriteVerbose("Stopping processing")
+    }    
+    ProcessRecord([Microsoft.PowerShell.Cmdletization.QueryBuilder]$QueryBuilder) {
+        $this.Cmdlet.WriteVerbose("Processing query builder")
+        foreach ($instance in $this.GetInstances()) {
+            if ($QueryBuilder.MatchesFilters($instance)) {
+                $this.Cmdlet.WriteObject($instance)
+            }
+        }
+        
+    }
+    ProcessRecord([Microsoft.PowerShell.Cmdletization.QueryBuilder]$QueryBuilder, 
+        [Microsoft.PowerShell.Cmdletization.MethodInvocationInfo] $MethodInvocationInfo, 
+        [bool]$PassThru) {
+        $this.Cmdlet.WriteVerbose("Processing query and method")
+        foreach ($instance in $this.GetInstances()) {
+            if ($QueryBuilder.MatchesFilters($instance)) {
+                $this.ProcessRecord($instance, $MethodInvocationInfo, $PassThru)
+            }
+        }        
+    }
+    ProcessRecord(        
+        [psobject]$Instance, 
+        [Microsoft.PowerShell.Cmdletization.MethodInvocationInfo]$MethodInvocationInfo, 
+        [bool]$PassThru
+    ) {
+        $methodSplat = $this.GetMethodSplat($MethodInvocationInfo)
+        $instanceMember = $instance.psobject.Members[$MethodInvocationInfo.MethodName]
+        $methodOutput = 
+            if ($methodSplat) {
+                $this.Cmdlet.SessionState.PSVariable.Set('this', $this)
+                $this.Cmdlet.SessionState.PSVariable.Set('_', $Instance)
+                . $methodSplat.Command @methodSplat
+            }
+            elseif ($instanceMember) {
+                
+                if ($instanceMember -isnot [Management.Automation.PSEvent]) {
+                    $invokeArgs = @(foreach ($methodParameter in $MethodInvocationInfo.Parameters) {
+                        $methodParameter.Value
+                    })
+                    $instanceMember.Invoke($invokeArgs)
+                } else {
+                    $registerObjectEvent = $this.Cmdlet.SessionState.InvokeCommand.GetCommand('Register-ObjectEvent','Cmdlet')
+                    $registerObjectEventSplat = [Ordered]@{} + $this.Cmdlet.MyInvocation.BoundParameters
+                    foreach ($parameterKey in @($registerObjectEventSplat.Keys)) {
+                        if (-not $registerObjectEvent.Parameters[$parameterKey]) {
+                            $registerObjectEventSplat.Remove($parameterKey)
+                        }                    
+                    }
+                    Register-ObjectEvent @registerObjectEventSplat
+                }            
+            }
+        if ($methodOutput -is [Threading.Tasks.Task]) {
+            $this.Tasks.Add($methodOutput)
+        }
+        if ($PassThru) {
+            if ($methodOutput) {
+                if ($methodOutput -isnot [Threading.Tasks.Task]) {                
+                    $this.Cmdlet.WriteObject($methodOutput)
+                }                
+            } else {
+                $this.Cmdlet.WriteObject($instance)
+            }            
+        }
+    }
+    ProcessRecord([Microsoft.PowerShell.Cmdletization.MethodInvocationInfo] $methodInvocationInfo) {
+        $this.Cmdlet.WriteVerbose("Processing static method invocation: $($methodInvocationInfo.MethodName)")
+        $methodSplat = $this.GetMethodSplat($MethodInvocationInfo)
+        if ($methodSplat) {
+            $methodCommandOutput = . $methodSplat.Command @methodSplat *&gt;&amp;1
+            
+            $this.Cmdlet.WriteObject($methodCommandOutput, $true)
+            
+            return
+        }
+        if ($this.ResolvedClass -is [type]) {
+            $myMember = $this.ResolvedClass::($methodInvocationInfo.MethodName)            
+            $myMemberResult = 
+                if ($myMember -is [Management.Automation.PSMethod]) {
+                    $invokeArgs = @(foreach ($methodParameter in $MethodInvocationInfo.Parameters) {
+                        $methodParameter.Value
+                    })
+                    $myMember.Invoke($invokeArgs)
+                } elseif ($null -ne $myMember) {
+                    $myMember
+                }
+            
+            $this.Cmdlet.WriteObject($myMemberResult)
+        } else {
+            $typeData = Get-TypeData -TypeName $this.ClassName
+            if (-not $typeData) { return }
+        }
+    }    
+    EndProcessing() {
+        $this.Cmdlet.WriteVerbose("Ending processing")
+        if ($this.Tasks.Count) {
+            foreach ($task in $this.Tasks) {
+                $this.Cmdlet.WriteObject($task.Result)
+            }
+        }        
+    }    
+}
+
+class PSAdapter : PSAdapterBase, Management.Automation.IDynamicParameters {}
+</Value>
+      </NoteProperty>
+      <NoteProperty>
+        <Name>PSAdapterExample.class.ps1</Name>
+        <Value>class PSAdapterExampleQueryBuilder : Microsoft.PowerShell.Cmdletization.QueryBuilder {
+    [Collections.IDictionary] $QueryOption = [Ordered]@{}
+    [Collections.Generic.List[PSObject]] $QueryFilterList = [Collections.Generic.List[PSObject]]::new()
+    [PSAdapterExample] $Adapter
+    PSAdapterExampleQueryBuilder([PSAdapterExample]$adapter) {
+        $this.Adapter = $adapter
+    }
+    AddQueryOption([string] $name, [object] $value) {
+        $this.QueryOption[$name] = $value
+        $this.Adapter.Cmdlet.WriteVerbose("Added query option '$name' with value '$value'")
+    }
+    ExcludeByProperty([string] $propertyName, [Collections.IEnumerable]$ExcludePropertyValue, [object] $propertyValue, [Microsoft.PowerShell.Cmdletization.BehaviorOnNoMatch] $behaviorOnNoMatch) {
+        $This.QueryFilterList.Add([PSCustomObject]([Ordered]@{
+            FilterType = "ExcludeByProperty"
+        } + $PSBoundParameters))
+        $this.Adapter.Cmdlet.WriteVerbose("Excluded by property '$propertyName' with value '$propertyValue'")
+    }
+    FilterByProperty([string] $propertyName, [Collections.IEnumerable]$AllowedPropertyValue, [bool] $wildcardsEnabled, [Microsoft.PowerShell.Cmdletization.BehaviorOnNoMatch] $behaviorOnNoMatch) {
+        $This.QueryFilterList.Add([PSCustomObject]([Ordered]@{
+            FilterType = "FilterByProperty"
+        } + $PSBoundParameters))
+        $this.Adapter.Cmdlet.WriteVerbose("Filtered property value '$propertyName' with value '$AllowedPropertyValue'")
+    }
+    FilterByMinPropertyValue([string]$propertyName, [object]$MinValue, [Microsoft.PowerShell.Cmdletization.BehaviorOnNoMatch] $behaviorOnNoMatch) {
+        $This.QueryFilterList.Add([PSCustomObject]([Ordered]@{
+            FilterType = "FilterByMinPropertyValue"
+        } + $PSBoundParameters))
+        $this.Adapter.Cmdlet.WriteVerbose("Filtered by MinValue value '$propertyName' with value '$MinValue'")
+    }
+    FilterByMaxPropertyValue([string]$propertyName, [object]$MaxValue, [Microsoft.PowerShell.Cmdletization.BehaviorOnNoMatch] $behaviorOnNoMatch) {
+        $This.QueryFilterList.Add([PSCustomObject]([Ordered]@{
+            FilterType = "FilterByMaxPropertyValue"
+        } + $PSBoundParameters))
+        $this.Adapter.Cmdlet.WriteVerbose("Filtered by MaxValue '$propertyName' with value '$MaxValue'")
+    }
+}
+class PSAdapterExample : Microsoft.PowerShell.Cmdletization.CmdletAdapter[object] {
+    [Microsoft.PowerShell.Cmdletization.QueryBuilder] GetQueryBuilder() {
+        $this.Cmdlet.WriteVerbose("Getting query builder")
+        $queryBuilder = [PSAdapterExampleQueryBuilder]::new($this)        
+        return $queryBuilder
+    }
+    BeginProcessing() {
+        $this.Cmdlet.WriteVerbose("Beginning processing")
+    }
+    StopProcessing() {
+        $this.Cmdlet.WriteVerbose("Stopping processing")
+    }    
+    ProcessRecord([Microsoft.PowerShell.Cmdletization.QueryBuilder]$QueryBuilder) {
+        $this.Cmdlet.WriteVerbose("Processing query builder")
+        $this.Cmdlet.WriteObject($QueryBuilder)        
+    }
+    ProcessRecord([Microsoft.PowerShell.Cmdletization.QueryBuilder]$QueryBuilder, 
+        [Microsoft.PowerShell.Cmdletization.MethodInvocationInfo] $MethodInvocationInfo, 
+        [bool]$PassThru) {
+        $this.Cmdlet.WriteVerbose("Processing query and method")        
+        $this.Cmdlet.WriteObject([PSCustomObject]([Ordered]@{} + $PSBoundParameters))        
+    }
+    ProcessRecord([Microsoft.PowerShell.Cmdletization.MethodInvocationInfo] $methodInvocationInfo) {
+        $typeData = Get-TypeData -TypeName $this.ClassName
+        $myMember = $typeData.Members[$methodInvocationInfo.MethodName]
+        $this.Cmdlet.WriteObject($myMember)
+    }
+    ProcessRecord([object]$Instance, 
+        [Microsoft.PowerShell.Cmdletization.MethodInvocationInfo] $MethodInvocationInfo, 
+        [bool]$PassThru
+    ) {
+        $this.Cmdlet.WriteVerbose("Processing instance and method")
+        $this.Cmdlet.WriteObject([PSCustomObject]([Ordered]@{} + $PSBoundParameters))
+    }
+    EndProcessing() {
+        $this.Cmdlet.WriteVerbose("Ending processing")
+    }
+}
+</Value>
+      </NoteProperty>
+      <NoteProperty>
+        <Name>PSXmlAdapter.class.ps1</Name>
+        <Value>class PSXmlAdapterQueryBuilder : Microsoft.PowerShell.Cmdletization.QueryBuilder {
+    [Collections.IDictionary] $QueryOption = [Ordered]@{}
+    [Collections.Generic.List[PSObject]] $QueryFilterList = [Collections.Generic.List[PSObject]]::new()
+    [PSXmlAdapter] $Adapter
+    PSXmlAdapterQueryBuilder([PSXmlAdapter]$adapter) {
+        $this.Adapter = $adapter
+    }
+    AddQueryOption([string] $name, [object] $value) {
+        $this.QueryOption[$name] = $value
+        $this.Adapter.Cmdlet.WriteVerbose("Added query option '$name' with value '$value'")
+    }
+    ExcludeByProperty([string] $propertyName, [Collections.IEnumerable]$ExcludePropertyValue, [object] $propertyValue, [Microsoft.PowerShell.Cmdletization.BehaviorOnNoMatch] $behaviorOnNoMatch) {
+        $This.QueryFilterList.Add([PSCustomObject]([Ordered]@{
+            FilterType = "ExcludeByProperty"
+        } + $PSBoundParameters))
+        $this.Adapter.Cmdlet.WriteVerbose("Excluded by property '$propertyName' with value '$propertyValue'")
+    }
+    FilterByProperty([string] $propertyName, [Collections.IEnumerable]$AllowedPropertyValue, [bool] $wildcardsEnabled, [Microsoft.PowerShell.Cmdletization.BehaviorOnNoMatch] $behaviorOnNoMatch) {
+        $This.QueryFilterList.Add([PSCustomObject]([Ordered]@{
+            FilterType = "FilterByProperty"
+        } + $PSBoundParameters))
+        $this.Adapter.Cmdlet.WriteVerbose("Filtered property value '$propertyName' with value '$AllowedPropertyValue'")
+    }
+    FilterByMinPropertyValue([string]$propertyName, [object]$MinValue, [Microsoft.PowerShell.Cmdletization.BehaviorOnNoMatch] $behaviorOnNoMatch) {
+        $This.QueryFilterList.Add([PSCustomObject]([Ordered]@{
+            FilterType = "FilterByMinPropertyValue"
+        } + $PSBoundParameters))
+        $this.Adapter.Cmdlet.WriteVerbose("Filtered by MinValue value '$propertyName' with value '$MinValue'")
+    }
+    FilterByMaxPropertyValue([string]$propertyName, [object]$MaxValue, [Microsoft.PowerShell.Cmdletization.BehaviorOnNoMatch] $behaviorOnNoMatch) {
+        $This.QueryFilterList.Add([PSCustomObject]([Ordered]@{
+            FilterType = "FilterByMaxPropertyValue"
+        } + $PSBoundParameters))
+        $this.Adapter.Cmdlet.WriteVerbose("Filtered by MaxValue '$propertyName' with value '$MaxValue'")
+    }
+    [bool] MatchesFilters([object]$Instance, [Microsoft.PowerShell.Cmdletization.QueryBuilder]$QueryBuilder) {
+        :nextQueryFilter foreach ($queryFilterItem in $QueryBuilder.QueryFilterList) {            
+            $InstancePropertyValue = $Instance.$($queryFilterItem.PropertyName)
+            switch ($queryFilterItem.FilterType) {
+                FilterByProperty {
+                    if ($queryFilterItem.WildcardsEnabled) {
+                        foreach ($wildcard in $queryFilterItem.AllowedPropertyValue) {
+                            if ($InstancePropertyValue -like $wildcard) {                                
+                                continue nextQueryFilter
+                            }
+                        }
+                        return $false
+                    } else {
+                        if ($InstancePropertyValue -notin $queryFilterItem.AllowedPropertyValue) {
+                            if ($queryFilterItem.BehaviorOnNoMatch -eq 'ReportErrors') {
+                                $this.Adapter.Cmdlet.WriteError("Property value $($queryFilterItem.PropertyName) is not in the allowed list")                             
+                            }
+                            return $false
+                        }
+                    }
+                    
+                    
+                }
+                FilterByMinPropertyValue {
+                    if ($InstancePropertyValue -lt $queryFilterItem.MinValue) {
+                        if ($queryFilterItem.BehaviorOnNoMatch -eq 'ReportErrors') {
+                            $this.Adapter.Cmdlet.WriteError("Property value $($queryFilterItem.PropertyName) is less than the minimum value")                                    
+                        }
+                        return $false
+                    }
+                }
+                FilterByMaxPropertyValue {
+                    if ($InstancePropertyValue -gt $queryFilterItem.MaxValue) {
+                        if ($queryFilterItem.BehaviorOnNoMatch -eq 'ReportErrors') {
+                            $this.Adapter.Cmdlet.WriteError("Property value $($queryFilterItem.PropertyName) is greater than the maximum value")                                    
+                        }
+                        return $false
+                    }
+                }
+                ExcludeByProperty {
+                    if ($queryFilterItem.WildcardsEnabled) {
+                        foreach ($wildcard in $queryFilterItem.ExcludePropertyValue) {
+                            if ($InstancePropertyValue -like $wildcard) {                                
+                                return $false
+                            }
+                        }
+                    } else {
+                        if ($InstancePropertyValue -in $queryFilterItem.ExcludePropertyValue) {
+                            if ($queryFilterItem.BehaviorOnNoMatch -eq 'ReportErrors') {
+                                $this.Adapter.Cmdlet.WriteError("Property value $($queryFilterItem.PropertyName) is in the exclude list")                                    
+                            }
+                            return $false
+                        }
+                    }                    
+                }
+            }            
+        }
+        return $true
+    }
+}
+class PSXmlAdapter : Microsoft.PowerShell.Cmdletization.CmdletAdapter[object] {    
+    [Microsoft.PowerShell.Cmdletization.QueryBuilder] GetQueryBuilder() {
+        $this.Cmdlet.WriteVerbose("Getting query builder")
+        $queryBuilder = [PSXmlAdapterQueryBuilder]::new($this)        
+        return $queryBuilder
+    }
+    [string[]] $myInvocationPrivateDataKeys
+    
+    BeginProcessing() {
+        $myNamePattern = [Regex]::Escape($this.Cmdlet.MyInvocation.InvocationName)
+        $this.myInvocationPrivateDataKeys = $this.PrivateData.Keys -match "^$myNamePattern"
+        if ($this.myInvocationPrivateDataKeys) {
+            $this.Cmdlet.WriteVerbose("Found private data keys: $($this.myInvocationPrivateDataKeys -join ', ')")
+        }
+        $this.Cmdlet.WriteVerbose("Beginning processing")
+    }
+    StopProcessing() {
+        $this.Cmdlet.WriteVerbose("Stopping processing")
+    }
+
+    [Ordered] SelectXmlSplatter() {
+        $pathKeys = $this.MyInvocationPrivateDataKeys -match '(?&lt;!x)Path$'
+        $xPathKey = @($this.MyInvocationPrivateDataKeys -match 'XPath$')[0]
+        $myNamespaceKey = $this.MyInvocationPrivateDataKeys -match 'Namespace$'
+        $selectXmlSplat = [ordered]@{}
+        
+        if ($myNamespaceKey) {
+            $myNamespaceInfo = $this.PrivateData[$myNamespaceKey]
+            try {
+                if ($myNamespaceInfo -match '^\s{0,}@{') {
+                    $dataBlock = [ScriptBlock]::Create("data {$myNamespaceInfo}")
+                    if ($dataBlock.Ast.EndBlock.Statements.Count -eq 1 -and 
+                        $dataBlock.Ast.EndBlock.Statements[0].PipelineElements.Count -eq 1 -and 
+                        $dataBlock.Ast.EndBlock.Statements[0].PipelineElements[0].Expression -is [Management.Automation.Language.HashTableAst]) {
+                        $selectXmlSplat.Namespace = $dataBlock.Invoke()
+                    }
+                } elseif ($myNamespaceInfo -match '^\s{0,}\{') {
+                    $selectXmlSplat.Namespace = $myNamespaceInfo | ConvertFrom-Json -AsHashtable                    
+                }
+            } catch {
+                Write-Debug "Failed to parse namespace info: $myNamespaceInfo"
+
+            }        
+        }
+        elseif ($this.ClassName -match '.+?[\p{P}=].+?http') {
+            $selectXmlSplat.Namespace = @{}
+            foreach ($section in $this.ClassName -split ';') {
+                $prefix, $xmlns = $section -split '\p{P}', 2
+                $selectXmlSplat.Namespace[$prefix] = $xmlns -replace '[''"]'
+            }
+        }
+
+        if (-not $pathKeys) {
+            $this.Cmdlet.WriteVerbose("No path keys found, defaulting to '*.xml'")
+            $pathKeys = "$($this.Cmdlet.MyInvocation.InvocationName)_Path"
+            $this.PrivateData[$pathKeys] = '*.xml'
+        }
+        if (-not $xPathKey -and $pathKeys) {
+            $this.Cmdlet.WriteVerbose("No XPath key found, defaulting to '/'")
+            $xPathKey = "$($this.Cmdlet.MyInvocation.InvocationName)_XPath"
+            $this.PrivateData[$xPathKey] = '/'
+        }
+        if ($pathKeys -and $xPathKey) {
+            $selectXmlSplat.Path = $this.PrivateData[$pathKeys]
+            $selectXmlSplat.XPath = $this.PrivateData[$xPathKey]        
+            return $selectXmlSplat
+        } else {
+            return @{}
+        }        
+    }
+
+    [PSObject] NewXmlElement([string]$ElementName, [Collections.IDictionary]$Dictionary) {
+        $invocationName = $this.Cmdlet.MyInvocation.InvocationName
+        $escapedInvocationName = '^' + ([Regex]::Escape($invocationName)) + '-'
+        if ($script:debugPreference -eq 'Continue') {
+            Write-Debug "Making Markup Element: $elementName"
+        }
+        $children = @(foreach ($parameterName in @($Dictionary.Keys)) {
+            $myParameterPrivateData = 
+                $this.PrivateData.Keys -match (
+                    [Regex]::Escape($parameterName)
+                ) -match $escapedInvocationName
+            if ($script:debugPreference -eq 'Continue' -and $myParameterPrivateData) {
+                Write-Debug "ParameterName: '$parameterName' has private data keys: $($myParameterPrivateData) "                            
+            }
+            if ($dictionary[$parameterName] -match '^\s{0,}\S+') {
+                foreach ($elementNameKey in $myParameterPrivateData -match 'ElementName$') {
+                    $elementNameValue = $this.PrivateData[$elementNameKey]
+                    if ($elementNameValue -eq '.') {
+                        [Security.SecurityElement]::Escape($dictionary[$parameterName])
+                        $dictionary.Remove($parameterName)
+                        continue
+                    }
+                    $childElementXml = foreach ($childElement in $dictionary[$parameterName]) {
+                        $(
+                            if ($childElement -is [switch] -and $childElement) {
+                                "&lt;$elementNameValue /&gt;"
+                            } else {
+                                "&lt;$elementNameValue&gt;" + 
+                                    [Security.SecurityElement]::Escape($childElement) + 
+                                "&lt;/$elementNameValue&gt;"
+                            }
+                        ) -as [xml]
+                    }                                
+                    
+                    if ($childElementXml) {
+                        $childElementXml
+                        $dictionary.Remove($parameterName)
+                    }
+                }
+            }                        
+            if ($dictionary[$parameterName] -is [xml] -or $dictionary[$parameterName] -is [xml[]]) {
+                $dictionary[$parameterName]
+                $dictionary.Remove($parameterName)
+            } elseif (($dictionary[$parameterName] -as [xml[]])) {
+                ($dictionary[$parameterName] -as [xml[]])
+                $dictionary.Remove($parameterName)
+            }            
+        })
+        $markupText = @(
+        "&lt;$ElementName"
+            $elementAttributes = @(
+                foreach ($keyValuePair in $dictionary.GetEnumerator()) {
+                    $key = $keyValuePair.Key
+                    $value = $keyValuePair.Value
+                    if ($value -is [bool]) {
+                        $value = $value.ToString().ToLower()
+                    }
+                    [Web.HttpUtility]::HtmlAttributeEncode($key) + '="' + [Web.HttpUtility]::HtmlAttributeEncode($Value) + '"'
+                }
+                $myXmlNamespaces = $this.PrivateData.Keys -match 'Namespace$' -match $escapedInvocationName
+                if ($myXmlNamespaces) {
+                    $xNamespaces = @($this.ClassName -split ';')
+                    for ($xNamespaceIndex =0; $xNamespaceIndex -lt $xNamespaces.Length; $xNamespaceIndex++) {
+                        $prefix, $xmlns = $xNamespaces[$xNamespaceIndex] -split '[\p{P}=]+', 2
+                        if ($xNamespaceIndex -eq 0) {                            
+                            "xmlns=`"$xmlns`""
+                        } else {
+                            "xmlns:$prefix=`"$xmlns`""
+                        }
+                    }
+                }
+            )
+            if ($elementAttributes) {
+                ' ' + ($elementAttributes -join ' ')
+            }
+        if ($children) {
+            '&gt;'
+            Write-Verbose "Adding $($children.Count) children:"
+            foreach ($child in $children) {
+                if ($child.OuterXml) {
+                    $child.OuterXml
+                } else {
+                    $child
+                }
+            }
+            "&lt;/$ElementName&gt;"
+        } else {
+            '/&gt;'
+        }
+        ) -join ' '
+        if ($markupText -as [xml]) {
+            return $markupText -as [xml]
+        } else {
+            return $markupText
+        }
+    }
+
+    
+        
+    ProcessRecord([Microsoft.PowerShell.Cmdletization.QueryBuilder]$QueryBuilder) {
+        $selectXmlSplat = $this.SelectXmlSplatter()
+        $this.Cmdlet.WriteVerbose("Processing query builder")
+        if ($selectXmlSplat) {                        
+            :nextNode foreach ($node in Select-Xml @selectXmlSplat *&gt;&amp;1) {                
+                if ($node.GetType -and $node.GetType().Name -match '\.(?&lt;StreamType&gt;.+?)Record$') {
+                    $this."Write$($matches.StreamType)"($node)
+                }
+                elseif ($QueryBuilder.MatchesFilters($node.Node, $QueryBuilder)) {
+                    $this.Cmdlet.WriteObject($node)
+                }                
+            }
+        }        
+    }
+    ProcessRecord([Microsoft.PowerShell.Cmdletization.QueryBuilder]$QueryBuilder, 
+        [Microsoft.PowerShell.Cmdletization.MethodInvocationInfo] $MethodInvocationInfo, 
+        [bool]$PassThru) {
+        $this.Cmdlet.WriteVerbose("Processing query and method")
+        $selectXmlSplat = $this.SelectXmlSplatter()    
+        if ($selectXmlSplat) {
+            :nextNode foreach ($node in Select-Xml @selectXmlSplat) {
+                if ($node.GetType -and $node.GetType().Name -match '\.(?&lt;StreamType&gt;.+?)Record$') {
+                    $this."Write$($matches.StreamType)"($node)
+                }
+                elseif ($queryBuilder.MatchesFilters($node.Node, $QueryBuilder)) {
+                    ProcessRecord($node.Node, $MethodInvocationInfo, $PassThru)
+                }
+            }
+        }        
+    }
+    ProcessRecord([object]$Instance, [Microsoft.PowerShell.Cmdletization.MethodInvocationInfo] $methodInvocationInfo, [bool]$PassThru) {
+        $this.Cmdlet.WriteVerbose("Processing instance and method")
+        # If there is no method name, change the object
+        if (-not $methodInvocationInfo.MethodName) {
+            foreach ($parameter in $methodInvocationInfo.Parameters) {
+                
+            }
+            $this.Cmdlet.WriteObject($Instance)
+            return
+        }        
+    }
+    ProcessRecord([Microsoft.PowerShell.Cmdletization.MethodInvocationInfo] $methodInvocationInfo) {
+        $elementName = $methodInvocationInfo.MethodName
+        $Dictionary = [Ordered]@{}
+        foreach ($parameter in $methodInvocationInfo.Parameters.GetEnumerator()) {
+            if (-not $parameter.Value) {
+                continue
+            }
+            $Dictionary[$parameter.Name] = $parameter.Value            
+            if ($parameter.Value -is [switch]) {
+                $Dictionary[$parameter.Name] = $parameter.Value
+            }
+        }
+        $this.Cmdlet.WriteObject($this.NewXmlElement($elementName, $Dictionary))
+    }
+    EndProcessing() {
+        $this.Cmdlet.WriteVerbose("Ending processing")
+    }
+}
+</Value>
+      </NoteProperty>
+    </Members>
+  </Type>
+  <Type>
+    <Name>PSAdapter.Template</Name>
+    <Members>
+      <NoteProperty>
+        <Name>DotNetAdapter.cs</Name>
+        <Value>namespace PSAdapter
+{    
+    using System;
+    using System.Collections.Generic;
+    using System.Text;
+    using System.Text.RegularExpressions;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using System.Management.Automation;
+    using Microsoft.PowerShell.Cmdletization;
+    using System.Collections;
+    using System.Collections.ObjectModel;
+    using System.Reflection;
+    using System.Collections.Specialized;
+    using System.Management.Automation.Language;
+    using System.Management.Automation.Runspaces;
+
+    public class PSDotNetQueryFilter
+    {
+        public enum QueryFilterType
+        {
+            Include,
+            Exclude,
+            Minimum,
+            Maximum
+        }
+        public QueryFilterType FilterType;
+        public string PropertyName;
+        public IEnumerable Values;
+        public bool wildcardsEnabled;
+    }
+
+    public class PSDotNetQueryBuilder : QueryBuilder
+    {        
+        Collection&lt;PSDotNetQueryFilter&gt; filters;
+ 
+        Type type;
+ 
+        Type Type
+        {
+            get
+            {
+                return type;
+            }
+        }
+        
+        public PSDotNetQueryBuilder(Type type)
+        {
+            this.type = type;
+            filters = new Collection&lt;PSDotNetQueryFilter&gt;();
+        }
+       
+        public override void ExcludeByProperty(string propertyName, System.Collections.IEnumerable excludedPropertyValues, bool wildcardsEnabled, BehaviorOnNoMatch behaviorOnNoMatch) {
+            filters.Add(
+                new PSDotNetQueryFilter()
+                {
+                    PropertyName = propertyName,
+                    Values = excludedPropertyValues,
+                    wildcardsEnabled = wildcardsEnabled,
+                    FilterType = PSDotNetQueryFilter.QueryFilterType.Exclude
+                }
+            );
+        }        
+ 
+        public override void FilterByMaxPropertyValue(string propertyName, object maxPropertyValue, BehaviorOnNoMatch behaviorOnNoMatch)
+        {
+            filters.Add(
+                new PSDotNetQueryFilter()
+                {
+                    PropertyName = propertyName,
+                    Values = new Object[]{ maxPropertyValue } ,
+                    FilterType = PSDotNetQueryFilter.QueryFilterType.Maximum
+                }
+            );
+        }
+ 
+        public override void FilterByMinPropertyValue(string propertyName, object minPropertyValue, BehaviorOnNoMatch behaviorOnNoMatch)
+        {
+            filters.Add(
+                new PSDotNetQueryFilter()
+                {
+                    PropertyName = propertyName,
+                    Values = new Object[]{ minPropertyValue } ,
+                    FilterType = PSDotNetQueryFilter.QueryFilterType.Minimum
+                }
+            );
+        }
+ 
+        public override void FilterByProperty(string propertyName, System.Collections.IEnumerable propertyValues, bool wildcardsEnabled, BehaviorOnNoMatch behaviorOnNoMatch )
+        {
+            filters.Add(
+                new PSDotNetQueryFilter()
+                {
+                    PropertyName = propertyName,
+                    Values = propertyValues,
+                    wildcardsEnabled = wildcardsEnabled,
+                    FilterType = PSDotNetQueryFilter.QueryFilterType.Include
+                }
+            );
+            PSDotNetQueryFilter qf = new PSDotNetQueryFilter();
+        }
+
+        public override void FilterByAssociatedInstance(object associatedInstance, string associationName, string sourceRole, string resultRole, BehaviorOnNoMatch behaviorOnNoMatch)
+        {
+            
+        }
+        
+ 
+        public bool MatchesFilters(object value, PSCmdlet cmdlet)
+        {
+            cmdlet.WriteDebug(String.Format("Confirming match: {0}.  {1} Filters to process", value, filters.Count));
+ 
+            int filterCount = 1;
+            foreach (PSDotNetQueryFilter filter in filters)
+            {
+                cmdlet.WriteDebug(String.Format("Processing filter #{0}.  Type: {1}", filterCount, filter.FilterType));
+                filterCount++;
+                PropertyInfo pi = value.GetType().GetProperty(filter.PropertyName, 
+                    BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.GetProperty | BindingFlags.GetField | BindingFlags.Instance);
+                cmdlet.WriteDebug(String.Format("Property Found {0}", pi)); 
+                if (pi != null)
+                {                        
+                    bool excluded = false;
+                    string propertyValueAsString;
+                    object propValue = pi.GetValue(value, null);
+                    propertyValueAsString = propValue.ToString();
+                    switch (filter.FilterType)
+                    {
+                        case PSDotNetQueryFilter.QueryFilterType.Exclude:
+                            cmdlet.WriteDebug(String.Format("Processing Exclude Filter: Value ( {0} ) : Wildcards Enabled ( {1} ) : Possible Values ( {2} )", propValue, filter.wildcardsEnabled, filter.Values));
+                            if (filter.wildcardsEnabled)
+                            {
+                                foreach (string exV in filter.Values)
+                                {
+                                    WildcardPattern wp = new WildcardPattern(exV,WildcardOptions.CultureInvariant| WildcardOptions.IgnoreCase);
+                                    if (propValue != null)
+                                    {
+                                        propertyValueAsString = propValue.ToString();
+                                        if (wp.IsMatch(propertyValueAsString))
+                                        {
+                                            excluded = true;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                foreach (object exV in filter.Values)
+                                {
+                                    if (propValue != null &amp;&amp; propValue == exV)
+                                    {
+                                        excluded = true;
+                                    }
+                                }
+
+                            }
+                            break;
+                        case PSDotNetQueryFilter.QueryFilterType.Include:
+                            cmdlet.WriteDebug(String.Format("Processing Include Filter: Value ( {0} ) : Wildcards Enabled ( {1} ) : Possible Values ( {2} )", propValue, filter.wildcardsEnabled, filter.Values));
+                            excluded = true;
+                            if (filter.wildcardsEnabled)
+                            {
+                                foreach (string exV in filter.Values)
+                                {
+                                    WildcardPattern wp = new WildcardPattern(exV, WildcardOptions.CultureInvariant | WildcardOptions.IgnoreCase);
+                                    if (propValue != null)
+                                    {
+                                        propertyValueAsString = propValue.ToString();
+                                        if (wp.IsMatch(propertyValueAsString))
+                                        {
+                                            excluded = false;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                foreach (object exV in filter.Values)
+                                {
+                                    if (propValue != null &amp;&amp; propValue == exV)
+                                    {
+                                        excluded = false;
+                                    }
+                                }
+
+                            }
+                            break;
+                        case PSDotNetQueryFilter.QueryFilterType.Maximum:
+                            cmdlet.WriteDebug(String.Format("Processing Maximum Filter: Value ( {0} ) : Max Values ( {1} )", propValue, filter.Values));
+                            excluded = true;
+                            foreach (object exV in filter.Values)
+                            {
+                                if (exV is IComparable &amp;&amp; propValue is IComparable)
+                                {
+                                    IComparable orignal = propValue as IComparable;
+                                    IComparable comparable = exV as IComparable;
+                                    if (orignal.CompareTo(comparable) &lt;= 0)
+                                    {
+                                        excluded = false;
+                                    }
+                                }
+                            }                                
+
+                            break;
+                        case PSDotNetQueryFilter.QueryFilterType.Minimum:
+                            cmdlet.WriteDebug(String.Format("Processing Minimum Filter: Value ( {0} ) : Max Values ( {1} )", propValue, filter.Values));
+                            excluded = true;
+                            foreach (object exV in filter.Values)
+                            {
+                                if (exV is IComparable &amp;&amp; propValue is IComparable)
+                                {
+                                    IComparable orignal = propValue as IComparable;
+                                    IComparable comparable = exV as IComparable;
+                                    if (orignal.CompareTo(comparable) &gt;= 0)
+                                    {
+                                        excluded = false;
+                                    }
+                                }
+                            }
+
+                            break;
+
+                    }
+                    if (excluded) { return false; } 
+                }
+
+            }
+            return true;
+        }
+    }
+ 
+ 
+    public class PSDotNetAdapter : CmdletAdapter&lt;Object&gt;
+    {
+        public DateTime InitializationTime = DateTime.Now;
+        public bool StopRequested = false;
+        public CancellationTokenSource CancellationTokenSource = new CancellationTokenSource();
+
+        public override QueryBuilder GetQueryBuilder() {
+            return new PSDotNetQueryBuilder(Type.GetType(this.ClassName));;
+        }        
+
+        public override void BeginProcessing() {
+            this.Cmdlet.WriteDebug("Begin Processing");
+            this.StopRequested = false;
+        }
+            
+        public override void EndProcessing() {
+            this.Cmdlet.WriteDebug("End Processing");
+        }
+
+        public override void StopProcessing() {
+            this.Cmdlet.WriteDebug("Stop Processing");
+            this.StopRequested = true;
+            this.CancellationTokenSource.Cancel();
+        }
+
+        PSDataCollection&lt;PSObject&gt; OutputCollection = new PSDataCollection&lt;PSObject&gt;();
+
+                
+        public PSDotNetAdapter() 
+        {
+            OutputCollection.DataAdded += (sender, e) =&gt; {
+                this.Cmdlet.WriteObject(OutputCollection[e.Index], true);
+            };
+        }
+
+        public ScriptBlock GetMethodScriptBlock(MethodInvocationInfo methodInvocationInfo) {
+            try {
+                string methodName = methodInvocationInfo.MethodName;
+                if (methodInvocationInfo.MethodName.StartsWith('{') &amp;&amp; methodInvocationInfo.MethodName.EndsWith('}')) {
+                    return ScriptBlock.Create(methodInvocationInfo.MethodName.Substring(1, methodInvocationInfo.MethodName.Length - 2));
+                }
+                return null;
+            } catch (Exception ex) {
+                this.Cmdlet.WriteError(new ErrorRecord(ex, "PSDotNetAdapter.InvalidScriptBlock", ErrorCategory.InvalidOperation, methodInvocationInfo));
+                return null;
+            }            
+        }
+
+        public string[] GetScriptParameterName(ScriptBlock scriptBlock) {
+            List&lt;string&gt; parameterNames = new List&lt;string&gt;();
+            scriptBlock.Ast.FindAll(
+                (ast) =&gt; {
+                    if (ast is ParameterAst) {
+                        ParameterAst paramAst = ast as ParameterAst;
+                        parameterNames.Add(paramAst.Name.VariablePath.UserPath.ToString());
+                    }
+                    return true;
+                },
+                false
+            );
+            return parameterNames.ToArray();
+        }
+ 
+        MemberInfo ResolveMethod(Type t, string methodName, MethodInvocationInfo methodInfo, out Object[] RealParameters)
+        {            
+            MemberInfo realMethod = null;
+            RealParameters = new Object[0];
+            Regex isConstructor = new Regex(@"^:{1,2}(?&gt;Constructor|New)$",RegexOptions.IgnoreCase);
+            
+            if (isConstructor.IsMatch(methodName)) {
+                foreach (ConstructorInfo method in t.GetConstructors()) {
+                    Collection&lt;Object&gt; realParameters = new Collection&lt;object&gt;();                    
+                    bool anyParameterNotFound = false;
+                    foreach (ParameterInfo pi in method.GetParameters())
+                    {                        
+                        foreach (MethodParameter mp in methodInfo.Parameters)
+                        {
+                            if (String.Compare(mp.Name, pi.Name, true) == 0)
+                            {
+                                realParameters.Add(mp.Value);
+                                break;
+                            } else {
+                                anyParameterNotFound = true;
+                                break;
+                            }
+                        }                        
+                    }
+                    if (! anyParameterNotFound) {
+                        realMethod = method;
+                        break;
+                    }
+                    RealParameters = new Object[realParameters.Count];
+                    realParameters.CopyTo(RealParameters, 0);
+                }
+            } else {
+                foreach (MethodInfo method in t.GetMethods())
+                {
+                    if (String.Compare(method.Name, methodName, true) == 0)
+                    {
+                        realMethod = method;
+                        break;
+                    }
+                }
+                if (realMethod != null)
+                {
+                    this.Cmdlet.WriteDebug(String.Format("Method match found.  Method is {0}", realMethod.ToString()));
+                    Collection&lt;Object&gt; realParameters = new Collection&lt;object&gt;();
+ 
+                    ParameterInfo[] parameters =null;
+                    if (realMethod is MethodInfo) {
+                        parameters = ((MethodInfo)realMethod).GetParameters();
+                    }
+                    if (realMethod is ConstructorInfo) {
+                        parameters = ((ConstructorInfo)realMethod).GetParameters();
+                    } 
+                    if (parameters != null) {                    
+                        foreach (ParameterInfo pi in parameters)
+                        {
+                            foreach (MethodParameter mp in methodInfo.Parameters)
+                            {
+                                this.Cmdlet.WriteDebug(String.Format("Comparing Parameter {0} to method parameter {1}", pi.Name, mp.Name));
+                                if (String.Compare(mp.Name, pi.Name, true) == 0)
+                                {
+                                    this.Cmdlet.WriteDebug(String.Format("Adding Parameter {0} to method parameter {1}", pi.Name, mp.Name));
+                                    realParameters.Add(mp.Value);
+                                    break;
+                                }
+                                if (mp.ParameterType != null &amp;&amp; pi.ParameterType != null &amp;&amp; mp.ParameterType.IsAssignableFrom(pi.ParameterType))
+                                {
+                                    this.Cmdlet.WriteDebug(String.Format("Adding Parameter {0} to method parameter {1}", pi.Name, mp.Name));
+                                    realParameters.Add(mp.Value);
+                                    break;
+                                }
+                            }
+                        }
+                        RealParameters = new Object[realParameters.Count];
+                        realParameters.CopyTo(RealParameters, 0);    
+                    } else {
+                        RealParameters = new Object[0];
+                    }                  
+                }
+                else
+                {
+                    RealParameters = new Object[0];
+                }
+            }
+            return realMethod;
+        }
+ 
+        public override void ProcessRecord(QueryBuilder query)
+        {
+            this.Cmdlet.WriteDebug("Process Query");
+            Collection&lt;PSObject&gt; results = GetInstances();
+                         
+            foreach (PSObject result in results)
+            {
+                this.Cmdlet.WriteDebug(String.Format("Processing Instance {0}", result.ImmediateBaseObject));
+                if ((query as PSDotNetQueryBuilder).MatchesFilters(result.ImmediateBaseObject, this.Cmdlet))
+                {
+                    this.Cmdlet.WriteDebug(String.Format("Match found! {0}", result.ImmediateBaseObject));
+                    this.Cmdlet.WriteObject(result, true);
+                }
+            }
+        }
+ 
+        public override void ProcessRecord(object objectInstance, MethodInvocationInfo methodInvocationInfo, bool passThru)
+        {
+            this.Cmdlet.WriteDebug("Process instance method");
+            ScriptBlock methodScriptBlock = GetMethodScriptBlock(methodInvocationInfo);
+            if (methodScriptBlock != null) {
+                this.Cmdlet.WriteDebug($"Invoking method script: {methodScriptBlock}");                
+                this.Cmdlet.SessionState.PSVariable.Set("this", this);
+                PowerShell psCmd = PowerShell.Create(RunspaceMode.CurrentRunspace).AddScript(methodScriptBlock.ToString());
+                foreach (string parameterName in this.GetScriptParameterName(methodScriptBlock)) {
+                    foreach (var methodParameter in methodInvocationInfo.Parameters) {
+                        if (string.Compare(methodParameter.Name, parameterName, true) == 0) {
+                            psCmd.AddParameter(parameterName, methodParameter.Value);
+                        }
+                    }
+                }
+                psCmd.AddArgument(methodInvocationInfo);
+                PSDataCollection&lt;object&gt; inputCollection = new PSDataCollection&lt;object&gt;();
+                inputCollection.Add(objectInstance);
+                PSInvocationSettings settings = new PSInvocationSettings();
+                psCmd.Invoke&lt;object, PSObject&gt;(inputCollection, OutputCollection, settings);
+                return;
+            }
+            if (objectInstance == null) { return; } 
+            
+            Type t = objectInstance.GetType();
+            
+            this.Cmdlet.WriteDebug(String.Format("Found Type {0} in Assembly {1}", this.ClassName, t.Assembly));
+            Object[] realMethodParameters;
+            MemberInfo realMethod = ResolveMethod(t, methodInvocationInfo.MethodName, methodInvocationInfo, out realMethodParameters);
+            if (realMethod == null) {
+                this.Cmdlet.WriteDebug(String.Format("Could not find {0} on type {1}", methodInvocationInfo.MethodName, this.ClassName));
+            }
+
+            try
+            {
+                Object result = null;
+                if (realMethod is MethodInfo) {                    
+                    result = (realMethod as MethodInfo).Invoke(objectInstance, realMethodParameters);                    
+                } else if (realMethod is ConstructorInfo) {
+                    result = (realMethod as ConstructorInfo).Invoke(objectInstance, realMethodParameters);
+                }
+                if (passThru)
+                {
+                    if (result != null) {
+                        this.Cmdlet.WriteObject(objectInstance, false);                        
+                    }                        
+                }
+                else
+                {
+                    if (result != null)
+                    {
+                        if (result is Task) {
+                            (result as Task).Wait(CancellationTokenSource.Token);
+                            Pipeline awaitResultPipeline = Runspace.DefaultRunspace.CreateNestedPipeline(@"
+                            param($task) $task.Result
+                        ", true);
+                            awaitResultPipeline.Commands[0].Parameters.Add("this", this);
+                            awaitResultPipeline.Commands[0].Parameters.Add("task", result);
+                            foreach (PSObject awaitResult in awaitResultPipeline.Invoke()) {
+                                this.Cmdlet.WriteObject(awaitResult, true);
+                            }
+                        } else {
+                            this.Cmdlet.WriteObject(result, true);
+                        }
+                        
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                if (ex.InnerException != null) {
+                    this.Cmdlet.WriteError(new ErrorRecord(ex.InnerException, "PSDotNetAdapter.MethodInvocationError", ErrorCategory.InvalidOperation, objectInstance)); 
+                } else {
+                    this.Cmdlet.WriteError(new ErrorRecord(ex, "PSDotNetAdapter.MethodInvocationError", ErrorCategory.InvalidOperation, objectInstance)); 
+                }                    
+            }            
+        }
+ 
+        public override void ProcessRecord(MethodInvocationInfo methodInvocationInfo)
+        {
+            this.Cmdlet.WriteDebug("Process Static Method");
+            ScriptBlock methodScriptBlock = GetMethodScriptBlock(methodInvocationInfo);
+            if (methodScriptBlock != null) {
+                this.Cmdlet.WriteDebug("Invoking method script:" + methodScriptBlock.ToString());
+                this.Cmdlet.SessionState.PSVariable.Set("this", this);
+                PowerShell psCmd = PowerShell.Create(RunspaceMode.CurrentRunspace).AddScript(methodScriptBlock.ToString());
+                psCmd.AddArgument(methodInvocationInfo);
+                PSDataCollection&lt;object&gt; inputCollection = new PSDataCollection&lt;object&gt;();
+                PSInvocationSettings settings = new PSInvocationSettings();
+                psCmd.Invoke&lt;object, PSObject&gt;(inputCollection, OutputCollection, settings);                
+                return;
+            }
+            string instanceScript = String.Empty;
+            
+            foreach (var kv in this.PrivateData) {
+                if (kv.Key.ToLower().StartsWith(this.Cmdlet.MyInvocation.InvocationName.ToLower())) {                    
+                    if (kv.Key.Substring(this.Cmdlet.MyInvocation.InvocationName.Length).ToLower() == "_instance") {
+                        instanceScript = kv.Value;
+                    }
+                    if (kv.Key.Substring(this.Cmdlet.MyInvocation.InvocationName.Length).ToLower() == "_instanceparameter") {
+                        if (this.Cmdlet.MyInvocation.BoundParameters.ContainsKey(kv.Value)) {                            
+                            ProcessRecord(this.Cmdlet.MyInvocation.BoundParameters[kv.Value], methodInvocationInfo, false);
+                            return;
+                        }                        
+                    }
+                    this.Cmdlet.WriteDebug(kv.Key + " : " + kv.Value);
+                    
+                }
+            }
+
+            if (! String.IsNullOrEmpty(instanceScript)) {
+                this.Cmdlet.WriteDebug("Running instance script" + instanceScript);
+                Pipeline pipeline = Runspace.DefaultRunspace.CreateNestedPipeline(instanceScript, false);
+                Collection&lt;PSObject&gt; results = pipeline.Invoke();
+                foreach (PSObject result in results) {
+                    ProcessRecord(result, methodInvocationInfo, false);                    
+                }
+                
+                pipeline.Dispose();
+                return;
+            }
+
+            Type t = null;
+            if (LanguagePrimitives.TryConvertTo&lt;Type&gt;(this.ClassName, out t))
+            {
+                this.Cmdlet.WriteDebug(String.Format("Found Type {0} in Assembly {1}", this.ClassName, t.Assembly));
+                Object[] realMethodParameters;
+                MemberInfo realMethod = ResolveMethod(t, methodInvocationInfo.MethodName, methodInvocationInfo, out realMethodParameters);
+                if (realMethod == null) { return; }
+                this.Cmdlet.WriteDebug(String.Format("Method Found {0}", realMethod));
+                try
+                {
+                    Object result = null;
+                    if ((realMethod is ConstructorInfo)) {
+                        result = ((ConstructorInfo)realMethod).Invoke(realMethodParameters);
+                    } else if ((realMethod is MethodInfo)) {
+                        result = ((MethodInfo)realMethod).Invoke(null, realMethodParameters);
+                    }
+                                       
+                    if (result != null)
+                    {                        
+                        this.Cmdlet.WriteObject(result, true);                        
+                    }
+                }
+                catch (Exception ex)
+                {
+                    if (ex.InnerException != null) {
+                        this.Cmdlet.WriteError(new ErrorRecord(ex.InnerException, "PSDotNetAdapter.MethodInvocationError", ErrorCategory.InvalidOperation, t)); 
+                    } else {
+                        this.Cmdlet.WriteError(new ErrorRecord(ex, "PSDotNetAdapter.MethodInvocationError", ErrorCategory.InvalidOperation, t)); 
+                    }                    
+                }
+            } else {
+                this.Cmdlet.WriteDebug(String.Format("Could not find type {0}", this.ClassName));
+            }
+ 
+        }
+
+        private Collection&lt;PSObject&gt; GetInstances() {
+            this.Cmdlet.WriteDebug(this.Cmdlet.MyInvocation.InvocationName);
+            
+            string instanceScript = String.Empty;
+            foreach (var kv in this.PrivateData) {
+                if (kv.Key.ToLower().StartsWith(this.Cmdlet.MyInvocation.InvocationName.ToLower())) {
+                    if (kv.Key.Substring(this.Cmdlet.MyInvocation.InvocationName.Length).ToLower() == "_instance") {
+                        instanceScript = kv.Value;
+                    }
+                    if (kv.Key.Substring(this.Cmdlet.MyInvocation.InvocationName.Length).ToLower() == "_instanceparameter") {
+                        if (this.Cmdlet.MyInvocation.BoundParameters.ContainsKey(kv.Value)) {
+                            Collection&lt;PSObject&gt; instanceSet = new Collection&lt;PSObject&gt;();
+                            instanceSet.Add(new PSObject(this.Cmdlet.MyInvocation.BoundParameters[kv.Value]));
+                            return instanceSet;
+                        }
+                        instanceScript = kv.Value;
+                    }
+                    this.Cmdlet.WriteDebug(kv.Key + " : " + kv.Value);
+                    
+                }
+            }
+
+            if (String.IsNullOrEmpty(instanceScript)) {
+                instanceScript = @"
+param($pattern)
+Write-Verbose ('Matching pattern: ' + ""$pattern"")
+foreach ($var in Get-Variable -ValueOnly) {
+    if ($var.pstypenames -match $pattern) {
+        $var
+    }
+}
+";                                            
+            }
+            this.Cmdlet.WriteDebug(instanceScript);
+            Pipeline pipeline = Runspace.DefaultRunspace.CreateNestedPipeline(instanceScript, false);
+            pipeline.Commands[0].Parameters.Add("pattern", Regex.Escape(this.ClassName));
+            Collection&lt;PSObject&gt; results = pipeline.Invoke();
+            pipeline.Dispose();
+            return results;
+        }
+ 
+        public override void ProcessRecord(QueryBuilder query, MethodInvocationInfo methodInvocationInfo, bool passThru)
+        {   
+            this.Cmdlet.WriteDebug("Process Query and Method");
+            Collection&lt;PSObject&gt; results = GetInstances();
+ 
+            foreach (PSObject result in results)
+            {
+                this.Cmdlet.WriteDebug(String.Format("Processing Instance {0}", result.ImmediateBaseObject));
+                if ((query as PSDotNetQueryBuilder).MatchesFilters(result.ImmediateBaseObject, this.Cmdlet))
+                {
+                    this.Cmdlet.WriteDebug(String.Format("Match found! {0}", result.ImmediateBaseObject));
+                    ProcessRecord(result.ImmediateBaseObject, methodInvocationInfo, passThru);
+                }
+            }
+        }
+    }
+}
+</Value>
+      </NoteProperty>
+      <NoteProperty>
+        <Name>EventAdapter.cs</Name>
+        <Value>namespace PSAdapter
+{    
+    using System;
+    using System.Collections.Generic;
+    using System.Text;
+    using System.Management.Automation;
+    using Microsoft.PowerShell.Cmdletization;
+    using System.Collections;
+    using System.Collections.ObjectModel;
+    using System.Reflection;
+    using System.Collections.Specialized;
+    using System.Management.Automation.Runspaces;
+    using System.Text.RegularExpressions;
+
+    public class PSEventAdapter : CmdletAdapter&lt;Object&gt;
+    {
+        public DateTime InitializationTime = DateTime.Now;
+
+        public void OutputEvent(string eventName) {
+            foreach (PSEventArgs eventArgs in this.Cmdlet.Events.ReceivedEvents) {
+                if (eventArgs.SourceIdentifier == eventName) {
+                    if (eventArgs.TimeGenerated &lt; this.InitializationTime) {
+                        continue;
+                    }
+                    this.Cmdlet.WriteObject(eventArgs);
+                }
+            }
+        }
+        
+        public override void BeginProcessing() {            
+            SendEvent(GetEventName("Begin"), this);
+            OutputEvent(GetEventName("Begin.Response"));
+        }        
+
+        public override void StopProcessing() {
+            SendEvent(GetEventName("Stop"), this);
+            OutputEvent(GetEventName("Stop.Response"));
+        }        
+            
+        public override void EndProcessing() {
+            SendEvent(GetEventName("End"), this);
+            OutputEvent(GetEventName("Stop.Response"));
+        }
+ 
+        public override void ProcessRecord(QueryBuilder query)
+        {
+            SendEvent(GetEventName("Process"), this, new object[] {query});
+            OutputEvent(GetEventName("Process.Response"));
+        }
+ 
+        public override void ProcessRecord(object objectInstance, MethodInvocationInfo methodInvocationInfo, bool passThru)
+        {            
+            SendEvent(GetEventName("Process"), this, new object[] {objectInstance, methodInvocationInfo, passThru});
+            OutputEvent(GetEventName("Process.Response"));
+        }
+ 
+        public override void ProcessRecord(MethodInvocationInfo methodInvocationInfo)
+        {
+            SendEvent(GetEventName("Process"), this, new object[] {methodInvocationInfo});
+            OutputEvent(GetEventName("Process.Response"));
+        }
+         
+        public override void ProcessRecord(QueryBuilder query, MethodInvocationInfo methodInvocationInfo, bool passThru)
+        {         
+            SendEvent(GetEventName("Process"), this, new object[] {query, methodInvocationInfo, passThru});
+            OutputEvent(GetEventName("Process.Response"));
+        }
+
+
+        public PSEventArgs SendEvent(string sourceIdentifier, object sender = null, object[] args = null, System.Management.Automation.PSObject extraData = null) {
+            if (extraData == null) {
+                extraData = new PSObject(this.Cmdlet);
+            }
+            PSEventArgs generatedEvent = this.Cmdlet.Events.GenerateEvent(sourceIdentifier, sender, args, extraData);
+            return generatedEvent;
+        }
+
+        System.Text.RegularExpressions.Regex endsWithPunctuation = new System.Text.RegularExpressions.Regex(@"\p{P}$");
+
+        public string InvocationSourceIdentifier {
+            get {
+                if (string.IsNullOrEmpty(this.ClassName)) {
+                    return this.Cmdlet.MyInvocation.MyCommand.Name;
+                }
+                else {
+                    if (this.endsWithPunctuation.IsMatch(this.ClassName)) {
+                        return $"{this.ClassName}{this.Cmdlet.MyInvocation.MyCommand.Name}";
+                    } else {
+                        return $"{this.ClassName}.{this.Cmdlet.MyInvocation.MyCommand.Name}";
+                    }
+                }                
+            }
+        }
+
+        public string GetEventName(string eventName) {            
+            string thisInvocationSourceIdentifier = this.InvocationSourceIdentifier;
+            if (this.endsWithPunctuation.IsMatch(thisInvocationSourceIdentifier)) {
+                return $"{thisInvocationSourceIdentifier}{eventName}";
+            } else {
+                return $"{thisInvocationSourceIdentifier}.{eventName}";
+            }
+        }
+    }
+}
+</Value>
+      </NoteProperty>
+      <NoteProperty>
+        <Name>NullAdapter.cs</Name>
+        <Value>/*
+.SYNOPSIS
+    This is a template for a CmdletAdapter that does nothing.
+.DESCRIPTION
+    This is a template for a CmdletAdapter that literally does nothing.
+
+    This can be useful as a starting point for creating a new CmdletAdapter.
+*/
+namespace PSAdapter
+{    
+    using System;
+    using Microsoft.PowerShell.Cmdletization;
+
+    public class NullAdapter : CmdletAdapter&lt;Object&gt;
+    {                
+    
+    }
+}
+</Value>
+      </NoteProperty>
+      <NoteProperty>
+        <Name>PSDictionaryAdapter.cs</Name>
+        <Value>namespace PSAdapter
+{    
+    using System;
+    using System.Collections;
+    using System.Collections.Specialized;        
+    using System.Management.Automation;        
+    using Microsoft.PowerShell.Cmdletization;        
+    
+    public class PSDictionaryAdapter : CmdletAdapter&lt;Object&gt;
+    {
+        public static OrderedDictionary GetMethodDictionary(MethodInvocationInfo methodInvocationInfo)
+        {
+            OrderedDictionary methodInfo = new OrderedDictionary(StringComparer.OrdinalIgnoreCase);
+            foreach (var paramInfo in methodInvocationInfo.Parameters)
+            {
+                if (paramInfo.Value != null) {
+                    methodInfo.Add(paramInfo.Name, paramInfo.Value);
+                }
+            }
+            return methodInfo;
+        }
+
+        public override void ProcessRecord(MethodInvocationInfo methodInvocationInfo)
+        {
+            OrderedDictionary methodInfo = GetMethodDictionary(methodInvocationInfo);
+            PSObject methodInfoObject = new PSObject(methodInfo);
+            methodInfoObject.Members.Add(new PSNoteProperty("MethodName", methodInvocationInfo.MethodName));
+            this.Cmdlet.WriteObject(methodInfoObject);
+        }                            
+    }
+}
+</Value>
+      </NoteProperty>
+      <NoteProperty>
+        <Name>PSJsonAdapter.cs</Name>
+        <Value>namespace PSAdapter
+{    
+    using System;
+    using System.Text;
+    using System.Collections.Generic;    
+    using System.Collections.ObjectModel;
+    using System.Collections.Specialized;
+    using System.Management.Automation;
+    using Microsoft.PowerShell.Cmdletization;
+    using System.Collections;    
+    using System.Reflection;    
+    using System.Management.Automation.Runspaces;
+    using System.Text.RegularExpressions;
+    using System.Threading;
+    using System.Threading.Tasks;
+
+    public class PSJsonAdapter : CmdletAdapter&lt;Object&gt;
+    {
+        public static OrderedDictionary GetMethodDictionary(MethodInvocationInfo methodInvocationInfo)
+        {
+            OrderedDictionary methodInfo = new OrderedDictionary(StringComparer.OrdinalIgnoreCase);
+            foreach (var paramInfo in methodInvocationInfo.Parameters)
+            {
+                if (paramInfo.Value != null) {
+                    methodInfo.Add(paramInfo.Name, paramInfo.Value);
+                }                
+            }
+            return methodInfo;
+        }                
+
+        public PSObject GetMethodObject(MethodInvocationInfo methodInvocationInfo)
+        {
+            OrderedDictionary methodInfo = GetMethodDictionary(methodInvocationInfo);
+            PSObject methodInfoObject = new PSObject(methodInfo);
+            methodInfoObject.TypeNames.Clear();
+            List&lt;string&gt; coalescedTypeNames = new List&lt;string&gt;();
+            if (! string.IsNullOrEmpty(this.ClassName)) {
+                coalescedTypeNames.Add(this.ClassName);
+            }
+            if (! string.IsNullOrEmpty(methodInvocationInfo.MethodName)) {
+                coalescedTypeNames.Add(methodInvocationInfo.MethodName);
+            }
+            if (! string.IsNullOrEmpty(this.Cmdlet.ParameterSetName)) {
+                coalescedTypeNames.Add(this.Cmdlet.ParameterSetName);
+            }
+            string joined = string.Join(".", coalescedTypeNames.ToArray());
+
+            methodInfoObject.TypeNames.Add(joined);
+            return methodInfoObject;
+
+        }
+
+        public override void ProcessRecord(MethodInvocationInfo methodInvocationInfo)
+        {
+            PowerShell psCmd = PowerShell.Create(RunspaceMode.CurrentRunspace);
+            psCmd.AddCommand("ConvertTo-Json");
+            psCmd.AddParameter("InputObject", GetMethodObject(methodInvocationInfo));
+            foreach (PSObject result in psCmd.Invoke())
+            {
+                this.Cmdlet.WriteObject(result);
+            }
+        }                            
+    }
+}
+</Value>
+      </NoteProperty>
+      <NoteProperty>
+        <Name>PSMarkupAdapter.cs</Name>
+        <Value>/*
+.SYNOPSIS
+    This is a template implementation for a MarkupAdapter.
+.DESCRIPTION
+    This is a template implementation for a MarkupAdapter.  It is a CmdletAdapter that creates Markup.
+
+    This can be useful for creating XML, HTML, or other markup languages.
+*/
+namespace PSAdapter
+{    
+    using System;
+    using System.Web;
+    using System.Management.Automation;
+    using System.Management.Automation.Runspaces;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Collections.Specialized;    
+    using System.Collections.ObjectModel;
+    using Microsoft.PowerShell.Cmdletization;
+    
+
+    public class PSMarkupAdapter : CmdletAdapter&lt;Object&gt;
+    {
+        public ScriptBlock ToMarkup { get; set; }
+        Dictionary&lt;string, List&lt;object&gt;&gt; attributesAndElements = new Dictionary&lt;string, List&lt;object&gt;&gt;(StringComparer.OrdinalIgnoreCase);
+
+        public override void BeginProcessing()
+        {
+            
+        }
+        public override void ProcessRecord(MethodInvocationInfo methodInvocationInfo)
+        {
+            if (this.ToMarkup == null)
+            {
+                this.ToMarkup = ScriptBlock.Create(@"
+                    param($elementName, $dictionary, $this)
+                    $invocationName = $this.Cmdlet.MyInvocation.InvocationName
+                    $escapedInvocationName = '^' + ([Regex]::Escape($invocationName)) + '-'
+                    if ($debugPreference -eq 'Continue') {
+                        Write-Debug ""Making Markup Element: $elementName""
+                    }
+                    $children = @(foreach ($parameterName in @($Dictionary.Keys)) {
+                        $myParameterPrivateData = 
+                            $this.PrivateData.Keys -match (
+                                [Regex]::Escape($parameterName)
+                            ) -match $escapedInvocationName
+                        if ($debugPreference -eq 'Continue' -and $myParameterPrivateData) {
+                            Write-Debug ""ParameterName: '$parameterName' has private data keys: $($myParameterPrivateData) ""                            
+                        }
+                        if ($dictionary[$parameterName] -match '^\s{0,}\S+') {
+                            foreach ($elementNameKey in $myParameterPrivateData -match 'ElementName$') {
+                                $elementNameValue = $this.PrivateData[$elementNameKey]
+                                if ($elementNameValue -eq '.') {
+                                    [Security.SecurityElement]::Escape($dictionary[$parameterName])
+                                    $dictionary.Remove($parameterName)
+                                    continue
+                                }
+                                $childElementXml = foreach ($childElement in $dictionary[$parameterName]) {
+                                    (
+                                        if ($childElement -is [switch] -and $childElement) {
+                                            ""&lt;$elementNameValue /&gt;""
+                                        } else {
+                                            ""&lt;$elementNameValue&gt;"" + 
+                                                [Security.SecurityElement]::Escape($childElement) + 
+                                            ""&lt;/$elementNameValue&gt;""
+                                        }
+                                    ) -as [xml]
+                                }                                
+                                
+                                if ($childElementXml) {
+                                    $childElementXml
+                                    $dictionary.Remove($parameterName)
+                                }
+                            }
+                        }                        
+                        if ($dictionary[$parameterName] -is [xml] -or $dictionary[$parameterName] -is [xml[]]) {
+                            $dictionary[$parameterName]
+                            $dictionary.Remove($parameterName)
+                        } elseif (($dictionary[$parameterName] -as [xml[]])) {
+                            ($dictionary[$parameterName] -as [xml[]])
+                            $dictionary.Remove($parameterName)
+                        }
+                    })
+                    $markupText = @(
+                    ""&lt;$ElementName""
+                        $elementAttributes = @(foreach ($keyValuePair in $dictionary.GetEnumerator()) {
+                            $key = $keyValuePair.Key
+                            $value = $keyValuePair.Value
+                            if ($value -is [bool]) {
+                                $value = $value.ToString().ToLower()
+                            }
+                            [Web.HttpUtility]::HtmlAttributeEncode($key) + '=""' + [Web.HttpUtility]::HtmlAttributeEncode($Value) + '""'
+                        })
+                        if ($elementAttributes) {
+                            ' ' + ($elementAttributes -join ' ')
+                        }
+                    if ($children) {
+                        '&gt;'
+                        Write-Verbose ""Adding $($children.Count) children:""
+                        foreach ($child in $children) {
+                            if ($child.OuterXml) {
+                                $child.OuterXml
+                            } else {
+                                $child
+                            }
+                        }
+                        ""&lt;/$ElementName&gt;""
+                    } else {
+                        '/&gt;'
+                    }
+                    ) -join ' '
+                    if ($markupText -as [xml]) {
+                        $markupText -as [xml]
+                    } else {
+                        $markupText
+                    }
+                ");
+            }
+            OrderedDictionary methodInfo = new OrderedDictionary(StringComparer.OrdinalIgnoreCase);            
+            foreach (var paramInfo in methodInvocationInfo.Parameters)
+            {
+                if (paramInfo.Value != null) {
+
+                    if (paramInfo.Value is SwitchParameter) {
+                        SwitchParameter switchParam = (SwitchParameter)paramInfo.Value;
+                        methodInfo.Add(paramInfo.Name, switchParam.IsPresent);
+                    } else {
+                        methodInfo.Add(paramInfo.Name, paramInfo.Value);
+                    }                    
+                }                
+            }
+            
+            Pipeline pipeline = Runspace.DefaultRunspace.CreateNestedPipeline(ToMarkup.ToString(), false);
+            pipeline.Commands[0].Parameters.Add("ElementName", methodInvocationInfo.MethodName);
+            pipeline.Commands[0].Parameters.Add("Dictionary", methodInfo);            
+            pipeline.Commands[0].Parameters.Add("PrivateData", this.PrivateData);
+            pipeline.Commands[0].Parameters.Add("This", this);
+            Collection&lt;PSObject&gt; results = pipeline.Invoke();
+            pipeline.Dispose();                
+            this.Cmdlet.WriteObject(results, true);
+        }
+    }
+}
+</Value>
+      </NoteProperty>
+      <NoteProperty>
+        <Name>PSTestStaticAdapter.cs</Name>
+        <Value>namespace PSAdapter
+{    
+    using System;
+    using System.Collections.Generic;
+    using System.Text;
+    using System.Management.Automation;
+    using Microsoft.PowerShell.Cmdletization;
+    using System.Collections;
+    using System.Collections.ObjectModel;
+    using System.Reflection;
+    using System.Collections.Specialized;
+    using System.Management.Automation.Runspaces;
+    using System.Text.RegularExpressions;
+
+    public class PSTestStaticAdapter : CmdletAdapter&lt;Object&gt;
+    {              
+        public override void ProcessRecord(MethodInvocationInfo methodInvocationInfo)
+        {
+            PSObject methodInfoObject = new PSObject(methodInvocationInfo);
+            this.Cmdlet.WriteObject(methodInfoObject);
+        }                            
+    }
+}
+</Value>
+      </NoteProperty>
+    </Members>
+  </Type>
+</Types>

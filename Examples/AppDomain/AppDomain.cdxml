@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<PowerShellMetadata xmlns="http://schemas.microsoft.com/cmdlets-over-objects/2009/11">
+    <!--
+    .SYNOPSIS
+        This is a sample CDXML file that creates System.AppDomain commands.
+    .DESCRIPTION
+        [System.AppDomain](http://msdn.microsoft.com/en-us/library/system.appdomain.aspx) 
+        is a class that represents an application domain, which is an isolated environment where applications execute.
+    -->
+    <Class ClassName="System.AppDomain" CmdletAdapter="PSAdapter">
+        <Version>1.0</Version>
+        <DefaultNoun>AppDomain</DefaultNoun>
+        <InstanceCmdlets>
+            <GetCmdletParameters>
+                <QueryableProperties>
+                    <QueryableProperty PropertyName="Assemblies" />
+                    <QueryableProperty PropertyName="B" />
+                </QueryableProperties>                
+            </GetCmdletParameters>
+            <Cmdlet>
+                <!--
+                .SYNOPSIS
+                    Gets the assemblies that have been loaded into the current application domain.
+                .DESCRIPTION
+                    The Get-Assembly cmdlet gets the assemblies that have been loaded into the current application domain.
+                .EXAMPLE
+                    Get-Assembly                    
+                -->
+                <CmdletMetadata Verb="Get" Noun="Assembly"/>
+                <Method MethodName="GetAssemblies">
+                    <ReturnValue>
+                        <Type PSType='System.Reflection.Assembly' />
+                    </ReturnValue>
+                </Method>  
+            </Cmdlet>
+        </InstanceCmdlets>
+        <StaticCmdlets>            
+            <Cmdlet>                
+                <CmdletMetadata Verb="Get" Noun="AppDomain"/>
+                <Method MethodName="get_CurrentDomain">
+                  <ReturnValue>
+                    <Type PSType="System.AppDomain" />
+                  </ReturnValue>
+                </Method>
+            </Cmdlet>            
+        </StaticCmdlets>
+        <CmdletAdapterPrivateData>
+            <Data Name='Get-AppDomain_Instance'>[AppDomain]::CurrentDomain</Data>
+            <Data Name='Get-Assembly_Instance'>[AppDomain]::CurrentDomain</Data>
+        </CmdletAdapterPrivateData>
+    </Class> 
+</PowerShellMetadata>

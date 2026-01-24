@@ -1,0 +1,465 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PowerShellMetadata xmlns="http://schemas.microsoft.com/cmdlets-over-objects/2009/11">    
+    <Class ClassName="CDXML" CmdletAdapter="PSAdapter.PSMarkupAdapter">
+        <Version>0.1</Version>
+        <DefaultNoun>CDXML</DefaultNoun>
+        <StaticCmdlets>
+            <!-- New-CdXml -->
+            <Cmdlet>
+                <CmdletMetadata Verb="New" Noun="CdXml" />
+                <Method MethodName="PowerShellMetadata">
+                    <Parameters>
+                        <Parameter ParameterName="Class">
+                            <Type PSType="xml" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" />
+                        </Parameter>                        
+                    </Parameters>
+                    <ReturnValue>
+                        <Type PSType="xml" />
+                    </ReturnValue>
+                </Method>
+            </Cmdlet>
+            <!-- New-CdXmlClass -->
+            <Cmdlet>
+                <CmdletMetadata Verb="New" Noun="CdXmlClass" />
+                <Method MethodName="Class">
+                    <Parameters>
+                        <Parameter ParameterName="ClassName">
+                            <Type PSType="string" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" />
+                        </Parameter>
+                        <Parameter ParameterName="CmdletAdapter">
+                            <Type PSType="string" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" />
+                        </Parameter>
+                        <Parameter ParameterName="DefaultNoun">
+                            <Type PSType="string" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" />
+                        </Parameter>
+                        <Parameter ParameterName="Version">
+                            <Type PSType="Version" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" />
+                        </Parameter>
+                        <Parameter ParameterName="StaticCmdlet">
+                            <Type PSType="xml" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" />
+                        </Parameter>
+                        <Parameter ParameterName="InstanceCmdlet">
+                            <Type PSType="xml" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" />
+                        </Parameter>
+                    </Parameters>
+                    <ReturnValue>
+                        <Type PSType="xml" />
+                    </ReturnValue>
+                </Method>
+            </Cmdlet>
+            <!-- New-CdXmlInstanceCmdlet -->
+            <Cmdlet>
+                <CmdletMetadata Verb="New" Noun="CdXmlInstanceCmdlet" />
+                <Method MethodName="InstanceCmdlets">
+                    <Parameters>
+                        <Parameter ParameterName="Cmdlet">
+                            <Type PSType="xml[]" />
+                            <CmdletParameterMetadata ValueFromPipeline="true" ValueFromPipelineByPropertyName="true" />
+                        </Parameter>                        
+                    </Parameters>
+                    <ReturnValue>
+                        <Type PSType="xml" />
+                    </ReturnValue>
+                </Method>
+            </Cmdlet>                        
+            <!-- New-CdXmlStaticCmdlet -->
+            <Cmdlet>
+                <CmdletMetadata Verb="New" Noun="CdXmlStaticCmdlet" />
+                <Method MethodName="StaticCmdlets">
+                    <Parameters>
+                        <Parameter ParameterName="Cmdlet">
+                            <Type PSType="xml[]" />
+                            <CmdletParameterMetadata ValueFromPipeline="true" ValueFromPipelineByPropertyName="true" />
+                        </Parameter>                        
+                    </Parameters>
+                    <ReturnValue>
+                        <Type PSType="xml" />
+                    </ReturnValue>
+                </Method>
+            </Cmdlet>
+            <!-- New-CdXmlCmldet -->
+            <Cmdlet>
+                <CmdletMetadata Verb="New" Noun="CdXmlCmdlet" />
+                <Method MethodName="Cmdlet">
+                    <Parameters>
+                        <Parameter ParameterName="CmdletMetadata">
+                            <Type PSType="xml" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" />
+                        </Parameter>
+                        <Parameter ParameterName="Method">
+                            <Type PSType="xml" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" />
+                        </Parameter>
+                    </Parameters>
+                    <ReturnValue>
+                        <Type PSType="xml" />
+                    </ReturnValue>
+                </Method>
+            </Cmdlet>
+            <!-- New-CdXmlMethod -->
+            <Cmdlet>
+                <CmdletMetadata Verb="New" Noun="CdXmlMethod" />
+                <Method MethodName='Method'>
+                    <Parameters>
+                        <Parameter ParameterName='MethodName'>
+                            <Type PSType='string' />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName='true' />
+                        </Parameter>
+                        <Parameter ParameterName="ReturnType">
+                            <Type PSType="xml" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" />
+                        </Parameter>
+                        <Parameter ParameterName="Parameters">
+                            <Type PSType="xml[]" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" Aliases="Parameter" />
+                        </Parameter>
+                    </Parameters>
+                </Method>
+            </Cmdlet>
+            <!-- New-CdXmlParameter -->
+            <Cmdlet>
+                <CmdletMetadata Verb="New" Noun="CdXmlParameter" />
+                <Method MethodName='Parameter'>                    
+                    <Parameters>
+                        <Parameter ParameterName='ParameterName'>
+                            <Type PSType='string' />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName='true' />
+                        </Parameter>
+                        <Parameter ParameterName="Type">
+                            <Type PSType="xml" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" />
+                        </Parameter>
+                        <Parameter ParameterName="CmdletParameterMetadata">
+                            <Type PSType="xml" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" Aliases="Parameter" />
+                        </Parameter>
+                    </Parameters>
+                </Method>
+            </Cmdlet>
+            <!-- New-CdXmlProperty -->
+            <Cmdlet>
+                <CmdletMetadata Verb="New" Noun="CdXmlProperty" />
+                <Method MethodName='Property'>                    
+                    <Parameters>
+                        <Parameter ParameterName='PropertyName'>
+                            <Type PSType='string' />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName='true' Aliases="Name ParameterName" />
+                        </Parameter>
+                        <Parameter ParameterName="Type">
+                            <Type PSType="xml" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" />
+                        </Parameter>
+                        <Parameter ParameterName="RegularQuery">
+                            <Type PSType="xml" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" Aliases="Query" />
+                        </Parameter>
+                    </Parameters>
+                </Method>
+            </Cmdlet>
+            <!-- New-CdXmlCmdletMetadata -->
+            <Cmdlet>
+                <CmdletMetadata Verb="New" Noun="CdXmlCmdletMetadata" />
+                <Method MethodName="CmdletMetadata">
+                    <Parameters>
+                        <Parameter ParameterName="Verb">
+                            <Type PSType="System.String" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" />
+                        </Parameter>
+                        <Parameter ParameterName="Noun">
+                            <Type PSType="System.String" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" />
+                        </Parameter>
+                    </Parameters>
+                    <ReturnValue>
+                        <Type PSType="xml" />
+                    </ReturnValue>
+                </Method>
+            </Cmdlet>
+            <!-- New-CdXmlGetCmdletMetadata -->
+            <Cmdlet>
+                <CmdletMetadata Verb="New" Noun="CdXmlGetCmdletMetadata" />
+                <Method MethodName="GetCmdletMetadata">
+                    <Parameters>
+                        <Parameter ParameterName="DefaultCmdletParameterSet">
+                            <Type PSType="System.String" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" />
+                        </Parameter>
+                        <Parameter ParameterName="QueryableProperties">
+                            <Type PSType="xml[]" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" Aliases="QueryProperty QueryableProperty" />
+                        </Parameter>
+                        <Parameter ParameterName="QueryOptions">
+                            <Type PSType="xml[]" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" Aliases="QueryOption QueryableOption QueryableOptions" />
+                        </Parameter>
+                    </Parameters>
+                    <ReturnValue>
+                        <Type PSType="xml" />
+                    </ReturnValue>
+                </Method>
+            </Cmdlet>            
+            <!-- New-CdXmlType -->
+            <Cmdlet>
+                <CmdletMetadata Verb="New" Noun="CdXmlType" />
+                <Method MethodName="Type">
+                    <Parameters>
+                        <Parameter ParameterName="PSType">
+                            <Type PSType="System.String" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" />
+                        </Parameter>
+                        <Parameter ParameterName="ETSType">
+                            <Type PSType="System.String" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" />
+                        </Parameter>
+                    </Parameters>
+                    <ReturnValue>
+                        <Type PSType="xml" />
+                    </ReturnValue>
+                </Method>
+            </Cmdlet>
+            <!-- New-CdXmlOption -->
+            <Cmdlet>
+                <CmdletMetadata Verb="New" Noun="CdXmlOption" />
+                <Method MethodName="Option">
+                    <Parameters>
+                        <Parameter ParameterName="OptionName">
+                            <Type PSType="System.String" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" />
+                        </Parameter>
+                        <Parameter ParameterName="Type">
+                            <Type PSType="xml" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" />
+                        </Parameter>
+                        <Parameter ParameterName="CmdletParameterMetadata">
+                            <Type PSType="xml" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" />
+                        </Parameter>
+                    </Parameters>
+                    <ReturnValue>
+                        <Type PSType="xml" />
+                    </ReturnValue>
+                </Method>
+            </Cmdlet>
+            <!-- New-CdXmlReturnValue -->
+            <Cmdlet>
+                <CmdletMetadata Verb="New" Noun="CdXmlReturnValue" />
+                <Method MethodName="ReturnValue">
+                    <Parameters>
+                        <Parameter ParameterName="Type">
+                            <Type PSType="xml" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" />
+                        </Parameter>                        
+                    </Parameters>
+                    <ReturnValue>
+                        <Type PSType="xml" />
+                    </ReturnValue>
+                </Method>
+            </Cmdlet>
+            <!-- New-CdXmlRegularQuery -->
+            <Cmdlet>
+                <CmdletMetadata Verb="New" Noun="CdXmlRegularQuery" />
+                <Method MethodName="RegularQuery">
+                    <Parameters>
+                        <Parameter ParameterName="AllowGlobbing">
+                            <Type PSType="switch" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true">
+                                <DefaultValue>False</DefaultValue>
+                            </CmdletParameterMetadata>
+                        </Parameter>
+                        <Parameter ParameterName="CmdletParameterMetadata">
+                            <Type PSType="xml" />
+                            <CmdletParameterMetadata ValueFromPipeline="true" />
+                        </Parameter>
+                    </Parameters>
+                    <ReturnValue>
+                        <Type PSType="xml" />
+                    </ReturnValue>
+                </Method>
+            </Cmdlet>
+            <!-- New-CdXmlCmdletParameterMetadata -->
+            <Cmdlet>
+                <CmdletMetadata Verb="New" Noun="CdXmlCmdletParameterMetadata" />
+                <Method MethodName="CmdletParameterMetadata">
+                    <Parameters>
+                        <Parameter ParameterName="ValueFromPipelineByPropertyName">
+                            <Type PSType="switch" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" />
+                        </Parameter>
+                        <Parameter ParameterName="ValueFromPipeline">
+                            <Type PSType="switch" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" />
+                        </Parameter>
+                        <Parameter ParameterName="IsMandatory">
+                            <Type PSType="switch" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" Aliases="Mandatory Required" />
+                        </Parameter>
+                        <Parameter ParameterName="Position">
+                            <Type PSType="int" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" />
+                        </Parameter>
+                        <Parameter ParameterName="Aliases">
+                            <Type PSType="string[]" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" />
+                        </Parameter>
+                        <Parameter ParameterName="CmdletParameterSets">
+                            <Type PSType="string[]" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" Aliases="CmdletParameterSet ParameterSets ParameterSet ParameterSetName" />
+                        </Parameter>
+                        <Parameter ParameterName="ConfirmImpact">
+                            <Type PSType="Management.Automation.ConfirmImpact" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true"/>
+                        </Parameter>
+                        <Parameter ParameterName="HelpUri">
+                            <Type PSType="Uri" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true"/>
+                        </Parameter>
+                        <Parameter ParameterName="ValidateNotNull">
+                            <Type PSType="switch" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true"/>
+                        </Parameter>
+                        <Parameter ParameterName="ValidateNotNullOrEmpty">
+                            <Type PSType="switch" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true"/>
+                        </Parameter>
+                        <Parameter ParameterName="AllowEmptyString">
+                            <Type PSType="switch" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true"/>
+                        </Parameter>
+                        <Parameter ParameterName="AllowNull">
+                            <Type PSType="switch" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true"/>
+                        </Parameter>
+                    </Parameters>
+                    <ReturnValue>
+                        <Type PSType="xml" />
+                    </ReturnValue>
+                </Method>
+            </Cmdlet>
+            <!-- New-CdXmlCmdletAdapterPrivateData -->
+            <Cmdlet>
+                <CmdletMetadata Verb="New" Noun="CdXmlCmdletAdapterPrivateData" />
+                <Method MethodName="CmdletAdapterPrivateData">
+                    <Parameters>
+                        <Parameter ParameterName="Data">
+                            <Type PSType="xml[]" />
+                            <CmdletParameterMetadata ValueFromPipeline="true" ValueFromPipelineByPropertyName="true" />
+                        </Parameter>                        
+                    </Parameters>
+                    <ReturnValue>
+                        <Type PSType="xml" />
+                    </ReturnValue>
+                </Method>
+            </Cmdlet>
+            <!-- New-CdXmlData -->
+            <Cmdlet>
+                <CmdletMetadata Verb="New" Noun="CdXmlData" />
+                <Method MethodName="Data">
+                    <Parameters>
+                        <Parameter ParameterName="Key">
+                            <Type PSType="string" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" />
+                        </Parameter>
+                        <Parameter ParameterName="Value">
+                            <Type PSType="string" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" />
+                        </Parameter>
+                    </Parameters>
+                    <ReturnValue>
+                        <Type PSType="xml" />
+                    </ReturnValue>
+                </Method>
+            </Cmdlet>
+            <!-- New-CdXmlValidateSet -->
+            <Cmdlet>
+                <CmdletMetadata Verb="New" Noun="CdXmlValidateSet" />
+                <Method MethodName="ValidateSet">
+                    <Parameters>
+                        <Parameter ParameterName="AllowedValue">
+                            <Type PSType="string[]" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" />
+                        </Parameter>                        
+                    </Parameters>
+                    <ReturnValue>
+                        <Type PSType="xml" />
+                    </ReturnValue>
+                </Method>                
+            </Cmdlet>
+            <!-- New-CdXmlValidateCount -->
+            <Cmdlet>
+                <CmdletMetadata Verb="New" Noun="CdXmlValidateCount" />
+                <Method MethodName="ValidateCount">
+                    <Parameters>
+                        <Parameter ParameterName="Min">
+                            <Type PSType="uint" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" />
+                        </Parameter>
+                        <Parameter ParameterName="Max">
+                            <Type PSType="uint" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" />
+                        </Parameter>
+                    </Parameters>
+                    <ReturnValue>
+                        <Type PSType="xml" />
+                    </ReturnValue>
+                </Method>
+            </Cmdlet>
+            <!-- New-CdXmlValidateLength -->
+            <Cmdlet>
+                <CmdletMetadata Verb="New" Noun="CdXmlValidateLength" />
+                <Method MethodName="ValidateLength">
+                    <Parameters>
+                        <Parameter ParameterName="Min">
+                            <Type PSType="uint" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" />
+                        </Parameter>
+                        <Parameter ParameterName="Max">
+                            <Type PSType="uint" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" />
+                        </Parameter>
+                    </Parameters>
+                    <ReturnValue>
+                        <Type PSType="xml" />
+                    </ReturnValue>
+                </Method>
+            </Cmdlet>
+            <!-- New-CdXmlValidateRange -->
+            <Cmdlet>
+                <CmdletMetadata Verb="New" Noun="CdXmlValidateRange" />
+                <Method MethodName="ValidateRange">
+                    <Parameters>
+                        <Parameter ParameterName="Min">
+                            <Type PSType="int" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" DefaultValue="0" />
+                        </Parameter>
+                        <Parameter ParameterName="Max">
+                            <Type PSType="int" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" DefaultValue="100" />
+                        </Parameter>
+                    </Parameters>
+                    <ReturnValue>
+                        <Type PSType="xml" />
+                    </ReturnValue>
+                </Method>
+            </Cmdlet>            
+        </StaticCmdlets>
+        <CmdletAdapterPrivateData>
+            <Data Name='New-CdXmlClass-Version_ElementName'>Version</Data>
+            <Data Name='New-CdXmlClass-DefaultNoun_ElementName'>DefaultNoun</Data>
+            <Data Name='New-CdXmlData-Value_ElementName'>.</Data>
+            <Data Name='New-CdXmlValidateSet-AllowedValue_ElementName'>AllowedValue</Data>
+            <Data Name='New-CdXmlCmdletParameterMetadata-AllowNull_ElementName'>AllowNull</Data>
+            <Data Name='New-CdXmlCmdletParameterMetadata-AllowEmptyString_ElementName'>AllowEmptyString</Data>
+            <Data Name='New-CdXmlCmdletParameterMetadata-ValidateNotNull_ElementName'>ValidateNotNull</Data>
+            <Data Name='New-CdXmlCmdletParameterMetadata-ValidateNotNullOrEmpty_ElementName'>ValidateNotNullOrEmpty</Data>
+        </CmdletAdapterPrivateData> 
+    </Class>
+    
+</PowerShellMetadata>
+

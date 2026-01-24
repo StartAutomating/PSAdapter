@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PowerShellMetadata xmlns="http://schemas.microsoft.com/cmdlets-over-objects/2009/11">
+    <Class ClassName="System.Management.Automation.Runspaces.RunspaceFactory" CmdletAdapter="PSAdapter.PSDotNetAdapter">
+        <Version>1.0</Version>
+        <DefaultNoun>RunspaceFactory</DefaultNoun>    
+        <StaticCmdlets>
+            <Cmdlet>
+                <CmdletMetadata Verb="New" Noun="Runspace" />
+                <Method MethodName="CreateRunspace">
+                    <Parameters>
+                        <Parameter ParameterName="InitialSessionState">
+                            <Type PSType="System.Management.Automation.Runspaces.InitialSessionState" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" Position="0" />
+                        </Parameter>
+                        <Parameter ParameterName="Host">
+                            <Type PSType="System.Management.Automation.Host.PSHost" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" Position="1" />
+                        </Parameter>
+                        <Parameter ParameterName="ConnectionInfo">
+                            <Type PSType="System.Management.Automation.Runspaces.RunspaceConnectionInfo" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" Position="2" />
+                        </Parameter>
+                    </Parameters>
+                    <ReturnValue>
+                        <Type PSType="Runspace" />
+                    </ReturnValue>
+                </Method>
+              </Cmdlet>
+              <Cmdlet>
+                <CmdletMetadata Verb="New" Noun="RunspacePool" />
+                <Method MethodName="CreateRunspacePool">
+                    <Parameters>
+                        <Parameter ParameterName="MinimumRunspaceCount">
+                            <Type PSType="int" />
+                            <CmdletParameterMetadata Alias="MinRunspaces" ValueFromPipelineByPropertyName="true" Position="0" DefaultValue="1" />
+                        </Parameter>
+                        <Parameter ParameterName="MaximumRunspaceCount">
+                            <Type PSType="int" />
+                            <CmdletParameterMetadata Alias="MaxRunspaces" ValueFromPipelineByPropertyName="true" Position="0" DefaultValue="1"/>
+                        </Parameter>
+                        <Parameter ParameterName="InitialSessionState">
+                            <Type PSType="System.Management.Automation.Runspaces.InitialSessionState" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" Position="0" />
+                        </Parameter>
+                        <Parameter ParameterName="Host">
+                            <Type PSType="System.Management.Automation.Host.PSHost" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" Position="1" />
+                        </Parameter>
+                        <Parameter ParameterName="ConnectionInfo">
+                            <Type PSType="System.Management.Automation.Runspaces.RunspaceConnectionInfo" />
+                            <CmdletParameterMetadata ValueFromPipelineByPropertyName="true" Position="2" />
+                        </Parameter>
+                    </Parameters>
+                    <ReturnValue>
+                        <Type PSType="System.Management.Automation.Runspaces.RunspacePool" />
+                    </ReturnValue>
+                </Method>
+              </Cmdlet>
+              <Cmdlet>
+                <CmdletMetadata Verb="New" Noun="OutOfProcessRunspace" />
+                <Method MethodName="CreateOutOfProcessRunspace">
+                    <Parameters>
+                        <Parameter ParameterName="TypeTable">
+                            <Type PSType="System.Management.Automation.Runspaces.TypeTable" />
+                            <CmdletParameterMetadata Alias="TypeData" ValueFromPipelineByPropertyName="true" Position="0" />
+                        </Parameter>
+                        <Parameter ParameterName="ProcessInstance">
+                            <Type PSType="System.Management.Automation.Runspaces.PowerShellProcessInstance" />
+                            <CmdletParameterMetadata Alias="Process Instance" ValueFromPipelineByPropertyName="true" Position="0"/>
+                        </Parameter>                        
+                    </Parameters>
+                    <ReturnValue>
+                        <Type PSType="System.Management.Automation.Runspaces.RunspacePool" />
+                    </ReturnValue>
+                </Method>
+              </Cmdlet>
+        </StaticCmdlets>
+        <CmdletAdapterPrivateData>
+            
+        </CmdletAdapterPrivateData>
+    </Class>    
+</PowerShellMetadata>
