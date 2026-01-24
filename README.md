@@ -44,5 +44,72 @@ PSAdapter ships several implementations of adapters:
 * PSDotNetAdapter adapts any .NET class into Cmdlets
 * PSEventAdapter creates Cmdlets that broadcast events
 * PSMarkupAdapter creates Cmdlets that make markup
+* PSXMLAdapter creates Cmdlets that make XML
+* PSJSONAdapter creates Cmdlets that output JSON
+* PSDictionaryAdapter creates Cmdlets the output dictionaries
+
+## Using Adapters
+
+Adapters allow you to create commands in XML.  Once you've imported the module, each adapter type will be available to use.
+
+You are free to modify them as as needed for your environment.
+
+To load a module that uses an adapter we can use Import-Module on the .cdxml file
+
+~~~PowerShell
+Get-Module PSAdapter | Split-Path | Push-Location
+Import-Module ./Examples/Guid.cdmxl -PassThru
+Pop-Location
+~~~
 
 
+Alternatively, if the adapter is a PSAdpater example, we can use: Enable-PSAdapter.
+~~~PowerShell
+
+Enable-PSAdapter -Name Guid
+~~~
+
+
+Adapted cmdlets are written in CDXML.   For example, Guid.cdxml is defined as:
+
+
+~~~xml
+<?xml version="1.0" encoding="utf-8"?>
+<PowerShellMetadata xmlns="http://schemas.microsoft.com/cmdlets-over-objects/2009/11">
+    <Class ClassName="System.Guid" CmdletAdapter="PSAdapter.PSDotNetAdapter">
+        <Version>1.0</Version>
+        <DefaultNoun>Guid</DefaultNoun>
+        <InstanceCmdlets>
+            <GetCmdletParameters />
+        </InstanceCmdlets>
+        <StaticCmdlets>
+            <Cmdlet>
+                <CmdletMetadata Verb="New" />
+                <Method MethodName="NewGuid">                
+                    <ReturnValue>
+                        <Type PSType="System.Guid" />
+                    </ReturnValue>
+                </Method>
+            </Cmdlet>
+            <Cmdlet>
+                <CmdletMetadata Verb="ConvertTo" />
+                <Method MethodName="Parse">
+                    <Parameters>
+                        <Parameter ParameterName="String">
+                            <Type PSType="System.String" />
+                            <CmdletParameterMetadata ValueFromPipeline="true" ValueFromPipelineByPropertyName="true" Position="0">
+                                <AllowNull />
+                            </CmdletParameterMetadata>
+                        </Parameter>
+                    </Parameters>
+                    <ReturnValue>
+                        <Type PSType="System.Guid" />
+                    </ReturnValue>
+                </Method>
+            </Cmdlet>
+        </StaticCmdlets>
+    </Class>    
+</PowerShellMetadata>
+~~~
+
+By allowing us to define cmdlets in data, we can rapdily define and import massive numbers of commands, thus "adapting" whole ecosystems at once.
